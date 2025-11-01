@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0, minimum-scale=1.0">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="format-detection" content="telephone=no">
+    <title>円を描け！</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="game-container">
+        <!-- メインゲームエリア -->
+        <main class="game-area">
+            <!-- ゲームタイトル -->
+            <div class="game-title">
+                <h1>円を描け！</h1>
+                <p class="game-subtitle">完璧な円を目指そう</p>
+            </div>
+            
+            <canvas id="gameCanvas" class="drawing-canvas"></canvas>
+            
+            <!-- 結果表示モーダル -->
+            <div class="result-modal" id="resultModal">
+                <div class="result-content">
+                    <!-- 結果画面タイトル -->
+                    <div class="result-title">
+                        <h2>円を描け！</h2>
+                        <p>あなたの結果</p>
+                    </div>
+                    
+                    <!-- 描いた円のプレビュー -->
+                    <div class="circle-preview">
+                        <canvas id="previewCanvas" class="preview-canvas"></canvas>
+                    </div>
+                    
+                    <!-- スコア表示 -->
+                    <div class="score-section">
+                        <div class="main-score">
+                            <span class="score-value" id="mainScore">0</span>
+                            <span class="score-label">点</span>
+                        </div>
+                        
+
+                        
+                        <!-- 評価メッセージ -->
+                        <div class="evaluation-message" id="evaluationMessage">
+                            素晴らしい円です！
+                        </div>
+                    </div>
+                    
+                    <!-- アクションボタン -->
+                    <div class="action-buttons">
+                        <button class="share-direct-button" id="shareDirectButton">📱 シェア</button>
+                        <button class="next-button" id="nextButton">次の円を描く</button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- JavaScript ファイル -->
+    <script src="js/DrawingEngine.js" onerror="console.error('DrawingEngine.js の読み込みに失敗しました')"></script>
+    <script src="js/ScoreCalculator.js" onerror="console.error('ScoreCalculator.js の読み込みに失敗しました')"></script>
+    <script src="js/UIManager.js" onerror="console.error('UIManager.js の読み込みに失敗しました')"></script>
+    <script src="js/GameController.js" onerror="console.error('GameController.js の読み込みに失敗しました')"></script>
+    <script src="js/main.js" onerror="console.error('main.js の読み込みに失敗しました')"></script>
+    
+    <!-- エラーハンドリング -->
+    <script>
+        window.addEventListener('error', function(e) {
+            console.error('グローバルエラー:', e.error);
+            console.error('ファイル:', e.filename);
+            console.error('行:', e.lineno);
+            console.error('列:', e.colno);
+        });
+        
+        window.addEventListener('unhandledrejection', function(e) {
+            console.error('未処理のPromise拒否:', e.reason);
+        });
+        
+        // ファイル読み込み完了の確認
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM読み込み完了');
+            console.log('現在のURL:', window.location.href);
+            console.log('プロトコル:', window.location.protocol);
+            
+            if (window.location.protocol === 'file:') {
+                console.warn('ファイルプロトコルで開かれています。HTTPサーバーでの実行を推奨します。');
+            }
+        });
+    </script>
+</body>
+</html>
