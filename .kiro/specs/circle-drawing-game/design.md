@@ -328,3 +328,74 @@ self.addEventListener('install', event => {
 2. **サービスワーカーの登録**: メインJSファイルでの登録処理
 3. **アイコンファイルの配置**: `/icons/` ディレクトリ
 4. **HTMLでのマニフェスト参照**: `<link rel="manifest" href="/manifest.json">`
+
+## SNS共有最適化設計
+
+### OGP（Open Graph Protocol）メタタグ
+
+SNSでのURL共有時に適切な情報を表示するため、以下のOGPメタタグをHTMLに実装します：
+
+```html
+<!-- 基本的なOGPタグ -->
+<meta property="og:title" content="円を描け！ - 完璧な円を目指すスキルゲーム">
+<meta property="og:description" content="スマートフォンで楽しむ円描画ゲーム。大きくて綺麗な円を素早く描いて高得点を目指そう！">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://yourdomain.com/">
+<meta property="og:image" content="https://yourdomain.com/images/ogp-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="円を描け！ゲーム画面">
+<meta property="og:site_name" content="円を描け！">
+<meta property="og:locale" content="ja_JP">
+```
+
+### Twitter Card メタタグ
+
+X（旧Twitter）での表示を最適化するため、以下のTwitter Cardメタタグを実装します：
+
+```html
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="円を描け！ - 完璧な円を目指すスキルゲーム">
+<meta name="twitter:description" content="スマートフォンで楽しむ円描画ゲーム。大きくて綺麗な円を素早く描いて高得点を目指そう！">
+<meta name="twitter:image" content="https://yourdomain.com/images/ogp-image.png">
+<meta name="twitter:image:alt" content="円を描け！ゲーム画面">
+```
+
+### OGP画像の設計
+
+SNS共有用の画像は以下の仕様で作成します：
+
+- **サイズ**: 1200x630ピクセル（OGP推奨サイズ）
+- **形式**: PNG形式（JPEGも可）
+- **ファイルサイズ**: 1MB以下推奨
+- **配置場所**: `/images/ogp-image.png`
+- **デザイン要素**:
+  - ゲームタイトル「円を描け！」を大きく表示
+  - 円を描いているイメージまたは完成した円のビジュアル
+  - ゲームの特徴を示すキャッチコピー
+  - ブランドカラー（青系統）を使用した背景
+
+### 追加のメタタグ
+
+検索エンジンとSNS以外のプラットフォームにも対応するため、以下のメタタグも追加します：
+
+```html
+<!-- 一般的なメタタグ -->
+<meta name="description" content="スマートフォンで楽しむ円描画ゲーム。大きくて綺麗な円を素早く描いて高得点を目指そう！">
+<meta name="keywords" content="円描画,ゲーム,スマートフォン,スキルゲーム,無料ゲーム">
+<meta name="author" content="円を描け！">
+
+<!-- 正規URL -->
+<link rel="canonical" href="https://yourdomain.com/">
+```
+
+### SNS共有機能の実装方針
+
+1. **静的メタタグ**: 基本的なOGP/Twitter Cardタグは静的にHTMLに記述
+2. **画像の事前準備**: OGP画像は事前に作成してサーバーに配置
+3. **URLの絶対パス**: すべての画像URLは絶対パス（https://から始まる完全なURL）で指定
+4. **テスト方法**: 
+   - Facebook Sharing Debugger: https://developers.facebook.com/tools/debug/
+   - Twitter Card Validator: https://cards-dev.twitter.com/validator
+   - LinkedIn Post Inspector: https://www.linkedin.com/post-inspector/

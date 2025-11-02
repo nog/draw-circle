@@ -1,0 +1,112 @@
+<svg width="1200" height="630" viewBox="0 0 1200 630" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- ダークブルーグラデーション背景 -->
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1a1a2e;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#16213e;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#0f3460;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- ネオングロー効果（シアン） -->
+    <filter id="neonGlowCyan" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="4" result="blur1"/>
+      <feGaussianBlur in="SourceGraphic" stdDeviation="8" result="blur2"/>
+      <feGaussianBlur in="SourceGraphic" stdDeviation="15" result="blur3"/>
+      <feMerge>
+        <feMergeNode in="blur3"/>
+        <feMergeNode in="blur2"/>
+        <feMergeNode in="blur1"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    
+    <!-- ネオングロー効果（グリーン） -->
+    <filter id="neonGlowGreen" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="4" result="blur1"/>
+      <feGaussianBlur in="SourceGraphic" stdDeviation="8" result="blur2"/>
+      <feGaussianBlur in="SourceGraphic" stdDeviation="12" result="blur3"/>
+      <feMerge>
+        <feMergeNode in="blur3"/>
+        <feMergeNode in="blur2"/>
+        <feMergeNode in="blur1"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    
+    <!-- 控えめなテキストグロー効果 -->
+    <filter id="textGlow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="4" result="blur1"/>
+      <feGaussianBlur in="SourceGraphic" stdDeviation="8" result="blur2"/>
+      <feMerge>
+        <feMergeNode in="blur2"/>
+        <feMergeNode in="blur1"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    
+    <!-- 微かなグロー効果（タイトル用） -->
+    <filter id="subtleGlow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="3" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- 背景 -->
+  <rect width="1200" height="630" fill="url(#bgGradient)"/>
+  
+  <!-- 装飾的なネオン円（背景） -->
+  <circle cx="150" cy="100" r="50" fill="none" stroke="#00d4ff" stroke-width="2" opacity="0.3" filter="url(#neonGlowCyan)"/>
+  <circle cx="1050" cy="530" r="70" fill="none" stroke="#00ff88" stroke-width="2" opacity="0.25" filter="url(#neonGlowGreen)"/>
+  <circle cx="950" cy="120" r="35" fill="none" stroke="#00d4ff" stroke-width="2" opacity="0.35" filter="url(#neonGlowCyan)"/>
+  <circle cx="250" cy="500" r="45" fill="none" stroke="#00ff88" stroke-width="2" opacity="0.2" filter="url(#neonGlowGreen)"/>
+  
+  <!-- メインの円（描画中のイメージ） -->
+  <g>
+    <!-- 完璧な円（ガイド） -->
+    <circle cx="600" cy="400" r="140" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="2" stroke-dasharray="8,6"/>
+    
+    <!-- 描画された円（ネオングロー付き） -->
+    <path d="M 740,400 
+             A 140,140 0 0,1 600,540
+             A 140,140 0 0,1 460,400
+             A 140,140 0 0,1 600,260
+             A 140,140 0 0,1 730,390"
+          fill="none" 
+          stroke="#00ff88" 
+          stroke-width="6" 
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          filter="url(#neonGlowGreen)"/>
+    
+    <!-- 描画開始点（ネオン） -->
+    <circle cx="740" cy="400" r="10" fill="#00d4ff" filter="url(#neonGlowCyan)"/>
+    <circle cx="740" cy="400" r="6" fill="#ffffff"/>
+    
+    <!-- 描画終了点（ネオン） -->
+    <circle cx="730" cy="390" r="10" fill="#ff5722" filter="url(#neonGlowCyan)"/>
+    <circle cx="730" cy="390" r="6" fill="#ffffff"/>
+  </g>
+  
+  <!-- タイトル（ピンク、微かなグロー） -->
+  <text x="600" y="130" 
+        font-family="'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', sans-serif" 
+        font-size="88" 
+        font-weight="bold" 
+        fill="#ff6b9d" 
+        text-anchor="middle"
+        filter="url(#subtleGlow)">
+    円を描け！
+  </text>
+  
+  <!-- サブタイトル -->
+  <text x="600" y="180" 
+        font-family="'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', sans-serif" 
+        font-size="28" 
+        fill="#a0a0a0" 
+        text-anchor="middle">
+    完璧な円を目指すスキルゲーム
+  </text>
+</svg>
