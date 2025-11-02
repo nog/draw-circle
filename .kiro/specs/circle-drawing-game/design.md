@@ -37,6 +37,8 @@
 - **イベント処理**: Touch Events API, Pointer Events API
 - **アニメーション**: RequestAnimationFrame API
 - **レスポンシブ**: CSS Media Queries, Viewport Meta Tag
+- **PWA**: Web App Manifest, Service Worker API
+- **アイコン**: SVG/PNG形式の複数サイズアイコン
 
 ## コンポーネントとインターフェース
 
@@ -256,3 +258,73 @@ totalScore = qualityScore * speedMultiplier * sizeMultiplier
 - タッチ遅延の削減（touch-action: none）
 - ビューポートの固定
 - スクロール防止の実装
+
+## PWA機能設計
+
+### Webアプリマニフェスト
+
+```json
+{
+  "name": "円描画ゲーム",
+  "short_name": "円描画",
+  "description": "スマートフォンで楽しむ円描画スキルゲーム",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#4285f4",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "icons/icon-180.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
+```
+
+### アイコンデザイン
+
+- **基本デザイン**: 円形のモチーフを使用した視覚的に分かりやすいアイコン
+- **カラーパレット**: ゲームのテーマカラーに合わせた青系統の色使い
+- **サイズ**: 180x180px（iOS Safari用）、192x192px（PWA標準）、512x512px（高解像度）
+- **形式**: PNG形式（透明背景対応）
+
+### 基本キャッシュ機能
+
+```javascript
+// 軽量なキャッシュ戦略（オンライン前提）
+const CACHE_NAME = 'circle-game-v1';
+const staticAssets = [
+  '/styles.css',
+  '/js/main.js',
+  '/icons/icon-180.png',
+  '/icons/icon-192.png',
+  '/icons/icon-512.png'
+];
+
+// 基本的なキャッシュ機能のみ実装
+self.addEventListener('install', event => {
+  event.waitUntil(
+    caches.open(CACHE_NAME)
+      .then(cache => cache.addAll(staticAssets))
+  );
+});
+```
+
+### PWA機能の統合
+
+1. **マニフェストファイルの配置**: `/manifest.json`
+2. **サービスワーカーの登録**: メインJSファイルでの登録処理
+3. **アイコンファイルの配置**: `/icons/` ディレクトリ
+4. **HTMLでのマニフェスト参照**: `<link rel="manifest" href="/manifest.json">`

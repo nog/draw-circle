@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <mask id="roundedMask">
+      <rect width="512" height="512" rx="112" fill="white"/>
+    </mask>
+  </defs>
+  
+  <g mask="url(#roundedMask)">
+    <rect width="512" height="512" fill="#1a1a2e"/>
+    
+    <circle cx="256" cy="256" r="200" fill="none" stroke="#00d4ff" stroke-width="16" opacity="0.08"/>
+    <circle cx="256" cy="256" r="200" fill="none" stroke="#00d4ff" stroke-width="12" opacity="0.1"/>
+    <circle cx="256" cy="256" r="200" fill="none" stroke="#00d4ff" stroke-width="8" opacity="0.12"/>
+    <circle cx="256" cy="256" r="200" fill="none" stroke="#00d4ff" stroke-width="4" opacity="0.15"/>
+    
+    <circle cx="256" cy="256" r="180" fill="none" stroke="#00d4ff" stroke-width="12" opacity="0.1"/>
+    <circle cx="256" cy="256" r="180" fill="none" stroke="#00d4ff" stroke-width="8" opacity="0.15"/>
+    <circle cx="256" cy="256" r="180" fill="none" stroke="#00d4ff" stroke-width="6" opacity="0.2"/>
+    <circle cx="256" cy="256" r="180" fill="none" stroke="#00d4ff" stroke-width="4" opacity="0.25"/>
+    
+    <circle cx="256" cy="256" r="144" fill="none" stroke="#00d4ff" stroke-width="24" opacity="0.12"/>
+    <circle cx="256" cy="256" r="144" fill="none" stroke="#00d4ff" stroke-width="18" opacity="0.2"/>
+    <circle cx="256" cy="256" r="144" fill="none" stroke="#00d4ff" stroke-width="12" opacity="0.35"/>
+    <circle cx="256" cy="256" r="144" fill="none" stroke="#00d4ff" stroke-width="8" stroke-linecap="round"/>
+    
+    <circle cx="256" cy="256" r="100" fill="none" stroke="#00ff88" stroke-width="16" opacity="0.1" stroke-dasharray="16,8"/>
+    <circle cx="256" cy="256" r="100" fill="none" stroke="#00ff88" stroke-width="10" opacity="0.2" stroke-dasharray="16,8"/>
+    <circle cx="256" cy="256" r="100" fill="none" stroke="#00ff88" stroke-width="6" opacity="0.4" stroke-dasharray="16,8"/>
+    <circle cx="256" cy="256" r="100" fill="none" stroke="#00ff88" stroke-width="4" opacity="0.9" stroke-dasharray="16,8"/>
+    
+    <circle cx="256" cy="256" r="60" fill="none" stroke="#00ff88" stroke-width="12" opacity="0.08" stroke-dasharray="8,4"/>
+    <circle cx="256" cy="256" r="60" fill="none" stroke="#00ff88" stroke-width="8" opacity="0.15" stroke-dasharray="8,4"/>
+    <circle cx="256" cy="256" r="60" fill="none" stroke="#00ff88" stroke-width="5" opacity="0.3" stroke-dasharray="8,4"/>
+    <circle cx="256" cy="256" r="60" fill="none" stroke="#00ff88" stroke-width="3" opacity="0.7" stroke-dasharray="8,4"/>
+    
+    <circle cx="256" cy="256" r="16" fill="#00ff88" opacity="0.15"/>
+    <circle cx="256" cy="256" r="12" fill="#00ff88" opacity="0.4"/>
+    <circle cx="256" cy="256" r="8" fill="#00ff88"/>
+    
+    <circle cx="400" cy="256" r="14" fill="#00d4ff" opacity="0.15"/>
+    <circle cx="400" cy="256" r="10" fill="#00d4ff" opacity="0.4"/>
+    <circle cx="400" cy="256" r="6" fill="#00d4ff" opacity="0.9"/>
+    
+    <circle cx="256" cy="112" r="14" fill="#00ff88" opacity="0.12"/>
+    <circle cx="256" cy="112" r="10" fill="#00ff88" opacity="0.35"/>
+    <circle cx="256" cy="112" r="6" fill="#00ff88" opacity="0.8"/>
+    
+    <circle cx="112" cy="256" r="14" fill="#00d4ff" opacity="0.12"/>
+    <circle cx="112" cy="256" r="10" fill="#00d4ff" opacity="0.35"/>
+    <circle cx="112" cy="256" r="6" fill="#00d4ff" opacity="0.8"/>
+    
+    <circle cx="256" cy="400" r="14" fill="#00ff88" opacity="0.1"/>
+    <circle cx="256" cy="400" r="10" fill="#00ff88" opacity="0.3"/>
+    <circle cx="256" cy="400" r="6" fill="#00ff88" opacity="0.7"/>
+    
+    <circle cx="337" cy="175" r="10" fill="#00d4ff" opacity="0.1"/>
+    <circle cx="337" cy="175" r="6" fill="#00d4ff" opacity="0.3"/>
+    <circle cx="337" cy="175" r="4" fill="#00d4ff" opacity="0.6"/>
+    
+    <circle cx="175" cy="175" r="10" fill="#00ff88" opacity="0.08"/>
+    <circle cx="175" cy="175" r="6" fill="#00ff88" opacity="0.25"/>
+    <circle cx="175" cy="175" r="4" fill="#00ff88" opacity="0.5"/>
+    
+    <circle cx="175" cy="337" r="10" fill="#00d4ff" opacity="0.08"/>
+    <circle cx="175" cy="337" r="6" fill="#00d4ff" opacity="0.25"/>
+    <circle cx="175" cy="337" r="4" fill="#00d4ff" opacity="0.5"/>
+    
+    <circle cx="337" cy="337" r="10" fill="#00ff88" opacity="0.06"/>
+    <circle cx="337" cy="337" r="6" fill="#00ff88" opacity="0.2"/>
+    <circle cx="337" cy="337" r="4" fill="#00ff88" opacity="0.4"/>
+    
+    <circle cx="256" cy="256" r="170" fill="none" stroke="#00d4ff" stroke-width="2" opacity="0.2" stroke-dasharray="4,8"/>
+    <circle cx="256" cy="256" r="80" fill="none" stroke="#00ff88" stroke-width="2" opacity="0.3" stroke-dasharray="2,4"/>
+  </g>
+</svg>

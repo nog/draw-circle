@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="192" height="192" viewBox="0 0 192 192" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <mask id="roundedMask">
+      <rect width="192" height="192" rx="42" fill="white"/>
+    </mask>
+  </defs>
+  
+  <g mask="url(#roundedMask)">
+    <rect width="192" height="192" fill="#1a1a2e"/>
+    
+    <circle cx="96" cy="96" r="70" fill="none" stroke="#00d4ff" stroke-width="8" opacity="0.1"/>
+    <circle cx="96" cy="96" r="70" fill="none" stroke="#00d4ff" stroke-width="6" opacity="0.15"/>
+    <circle cx="96" cy="96" r="70" fill="none" stroke="#00d4ff" stroke-width="4" opacity="0.2"/>
+    <circle cx="96" cy="96" r="70" fill="none" stroke="#00d4ff" stroke-width="2" opacity="0.25"/>
+    
+    <circle cx="96" cy="96" r="54" fill="none" stroke="#00d4ff" stroke-width="12" opacity="0.15"/>
+    <circle cx="96" cy="96" r="54" fill="none" stroke="#00d4ff" stroke-width="8" opacity="0.25"/>
+    <circle cx="96" cy="96" r="54" fill="none" stroke="#00d4ff" stroke-width="6" opacity="0.4"/>
+    <circle cx="96" cy="96" r="54" fill="none" stroke="#00d4ff" stroke-width="4" stroke-linecap="round"/>
+    
+    <circle cx="96" cy="96" r="32" fill="none" stroke="#00ff88" stroke-width="8" opacity="0.1" stroke-dasharray="8,4"/>
+    <circle cx="96" cy="96" r="32" fill="none" stroke="#00ff88" stroke-width="5" opacity="0.2" stroke-dasharray="8,4"/>
+    <circle cx="96" cy="96" r="32" fill="none" stroke="#00ff88" stroke-width="3" opacity="0.4" stroke-dasharray="8,4"/>
+    <circle cx="96" cy="96" r="32" fill="none" stroke="#00ff88" stroke-width="2" opacity="0.8" stroke-dasharray="8,4"/>
+    
+    <circle cx="96" cy="96" r="6" fill="#00ff88" opacity="0.2"/>
+    <circle cx="96" cy="96" r="4" fill="#00ff88" opacity="0.5"/>
+    <circle cx="96" cy="96" r="3" fill="#00ff88"/>
+    
+    <circle cx="150" cy="96" r="5" fill="#00d4ff" opacity="0.2"/>
+    <circle cx="150" cy="96" r="3" fill="#00d4ff" opacity="0.5"/>
+    <circle cx="150" cy="96" r="2" fill="#00d4ff" opacity="0.9"/>
+    
+    <circle cx="96" cy="42" r="5" fill="#00ff88" opacity="0.15"/>
+    <circle cx="96" cy="42" r="3" fill="#00ff88" opacity="0.4"/>
+    <circle cx="96" cy="42" r="2" fill="#00ff88" opacity="0.7"/>
+    
+    <circle cx="42" cy="96" r="5" fill="#00d4ff" opacity="0.15"/>
+    <circle cx="42" cy="96" r="3" fill="#00d4ff" opacity="0.4"/>
+    <circle cx="42" cy="96" r="2" fill="#00d4ff" opacity="0.8"/>
+    
+    <circle cx="96" cy="150" r="5" fill="#00ff88" opacity="0.12"/>
+    <circle cx="96" cy="150" r="3" fill="#00ff88" opacity="0.3"/>
+    <circle cx="96" cy="150" r="2" fill="#00ff88" opacity="0.6"/>
+  </g>
+</svg>
