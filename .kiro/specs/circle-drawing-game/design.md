@@ -2,7 +2,7 @@
 
 ## 概要
 
-円描画ゲームは、HTML5 Canvas APIとJavaScriptを使用したシングルページアプリケーション（SPA）として実装されます。タッチイベントを処理し、リアルタイムで描画を追跡し、数学的アルゴリズムを使用して円の品質を評価し、スピードとサイズに基づいてスコアを計算します。
+円描画ゲームは、HTML5 Canvas APIとJavaScriptを使用したシングルページアプリケーション（SPA）として実装されます。タッチイベントを処理し、リアルタイムで描画を追跡し、数学的アルゴリズムを使用して円の品質を評価してスコアを計算します。
 
 ## アーキテクチャ
 
@@ -74,14 +74,11 @@ class DrawingEngine {
 
 ### 3. ScoreCalculator
 
-円の品質、スピード、サイズを評価してスコアを計算します。
+円の品質を評価してスコアを計算します。
 
 ```javascript
 class ScoreCalculator {
-  calculateCircleQuality(path)
-  calculateSpeedScore(drawingTime)
-  calculateSizeScore(diameter)
-  calculateTotalScore(quality, speed, size)
+  calculateCircleQuality(path) // 0-100点、小数点以下3桁まで計算
 }
 ```
 
@@ -95,6 +92,7 @@ class UIManager {
   showScoreAnimation(score)
   showFeedback(message, type)
   updateGameState(state)
+  formatScore(value, decimals = 3) // スコアを指定桁数でフォーマット
 }
 ```
 
@@ -117,12 +115,12 @@ class UIManager {
 
 ```javascript
 {
-  qualityScore: number,    // 0-100
-  speedMultiplier: number, // 0.1-3.0
-  sizeMultiplier: number,  // 0.1-3.0
-  totalScore: number,
-  drawingTime: number,
-  diameter: number
+  qualityScore: number,      // 0-100（小数点以下3桁）
+  circularity: number,       // 円形度（小数点以下4桁）
+  closure: number,           // 閉じ具合（小数点以下4桁）
+  smoothness: number,        // 滑らかさ（小数点以下4桁）
+  drawingTime: number,       // 描画時間（ミリ秒）
+  diameter: number           // 円の直径（ピクセル）
 }
 ```
 
@@ -140,62 +138,53 @@ class UIManager {
 
 ## スコア計算アルゴリズム
 
-### 1. 円品質スコア（0-100点）
+### 円品質スコア（0-100点）
 
 円の品質は以下の要素で評価されます：
 
-- **円形度**: 描画パスが理想的な円にどれだけ近いか
-- **閉じ具合**: 開始点と終了点の距離
-- **滑らかさ**: パス上の点の分布の均一性
+- **円形度**: 描画パスが理想的な円にどれだけ近いか（小数点以下4桁で計算）
+- **閉じ具合**: 開始点と終了点の距離（小数点以下4桁で計算）
+- **滑らかさ**: パス上の点の分布の均一性（小数点以下4桁で計算）
 
 ```javascript
-// 円形度の計算
+// 円形度の計算（小数点以下4桁）
 function calculateCircularity(points) {
   const center = calculateCenter(points);
   const avgRadius = calculateAverageRadius(points, center);
   const radiusVariance = calculateRadiusVariance(points, center, avgRadius);
-  return Math.max(0, 100 - (radiusVariance / avgRadius) * 100);
+  const circularity = Math.max(0, 100 - (radiusVariance / avgRadius) * 100);
+  return Math.round(circularity * 10000) / 10000; // 小数点以下4桁
 }
-```
 
-### 2. スピード倍率（0.1-3.0倍）
-
-描画時間に基づく倍率計算：
-
-```javascript
-function calculateSpeedMultiplier(drawingTime) {
-  const maxTime = 5000; // 5秒
-  const minTime = 200;  // 0.2秒
-  
-  if (drawingTime <= minTime) return 3.0;
-  if (drawingTime >= maxTime) return 0.1;
-  
-  // 指数関数的に減少
-  return 3.0 * Math.pow(0.1/3.0, (drawingTime - minTime) / (maxTime - minTime));
+// 閉じ具合の計算（小数点以下4桁）
+function calculateClosure(points) {
+  // ... 計算処理 ...
+  const closure = Math.max(0, 100 - (distanceRatio * 300));
+  return Math.round(closure * 10000) / 10000; // 小数点以下4桁
 }
-```
 
-### 3. サイズ倍率（0.1-3.0倍）
-
-円の直径に基づく倍率計算：
-
-```javascript
-function calculateSizeMultiplier(diameter) {
-  const maxDiameter = Math.min(canvas.width, canvas.height) * 0.8;
-  const minDiameter = 50;
-  
-  if (diameter >= maxDiameter) return 3.0;
-  if (diameter <= minDiameter) return 0.1;
-  
-  // 線形に増加
-  return 0.1 + (2.9 * (diameter - minDiameter) / (maxDiameter - minDiameter));
+// 滑らかさの計算（小数点以下4桁）
+function calculateSmoothness(points) {
+  // ... 計算処理 ...
+  const smoothness = Math.max(0, 100 - (standardDeviation * 100));
+  return Math.round(smoothness * 10000) / 10000; // 小数点以下4桁
 }
-```
 
-### 4. 最終スコア
-
-```javascript
-totalScore = qualityScore * speedMultiplier * sizeMultiplier
+// 最終品質スコアの計算（小数点以下3桁）
+function calculateCircleQuality(path) {
+  const circularity = calculateCircularity(points); // 4桁精度
+  const closure = calculateClosure(points);         // 4桁精度
+  const smoothness = calculateSmoothness(points);   // 4桁精度
+  
+  // 重み付き合計
+  const qualityScore = 
+    circularity * 0.5 +    // 円形度の重み
+    closure * 0.35 +       // 閉じ具合の重み
+    smoothness * 0.15;     // 滑らかさの重み
+  
+  // 最終スコアは小数点以下3桁
+  return Math.round(qualityScore * 1000) / 1000;
+}
 ```
 
 ## エラーハンドリング

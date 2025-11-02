@@ -143,12 +143,25 @@ class UIManager {
     }
     
     /**
+     * スコアを指定桁数でフォーマット
+     * @param {number} value - フォーマットする値
+     * @param {number} decimals - 小数点以下の桁数（デフォルト: 3）
+     * @returns {string} フォーマットされたスコア文字列
+     */
+    formatScore(value, decimals = 3) {
+        if (typeof value !== 'number' || isNaN(value)) {
+            return '0.000';
+        }
+        return value.toFixed(decimals);
+    }
+    
+    /**
      * スコア表示を更新
      */
     updateScoreDisplay(scoreData) {
-        // メインスコア更新（品質スコアと同じ）
+        // メインスコア更新（品質スコアを小数点以下3桁で表示）
         if (this.elements.mainScore) {
-            this.elements.mainScore.textContent = Math.round(scoreData.qualityScore);
+            this.elements.mainScore.textContent = this.formatScore(scoreData.qualityScore, 3);
         }
     }
     
@@ -439,7 +452,7 @@ class UIManager {
      * スクリーンショットのスコア情報を描画
      */
     drawScreenshotScore(ctx, scoreData, width, height) {
-        const quality = Math.round(scoreData.qualityScore);
+        const quality = this.formatScore(scoreData.qualityScore, 3);
         
         // メインスコア
         ctx.fillStyle = '#00ff88';
@@ -447,13 +460,14 @@ class UIManager {
         ctx.textAlign = 'center';
         ctx.fillText(`${quality}点`, width / 2, height - 200);
         
-        // 評価レベル
+        // 評価レベル（数値として評価）
+        const qualityNum = parseFloat(quality);
         let level = '';
-        if (quality >= 95) level = 'マスター';
-        else if (quality >= 90) level = 'エキスパート';
-        else if (quality >= 80) level = '上級者';
-        else if (quality >= 70) level = '中級者';
-        else if (quality >= 60) level = '初級者';
+        if (qualityNum >= 95) level = 'マスター';
+        else if (qualityNum >= 90) level = 'エキスパート';
+        else if (qualityNum >= 80) level = '上級者';
+        else if (qualityNum >= 70) level = '中級者';
+        else if (qualityNum >= 60) level = '初級者';
         else level = '練習中';
         
         ctx.fillStyle = '#ffd700';
@@ -573,9 +587,7 @@ class UIManager {
      * Web Share APIでシェア
      */
     shareWithWebAPI(imageBlob, scoreData) {
-        const score = Math.round(scoreData.totalScore);
-        const quality = Math.round(scoreData.qualityScore);
-        const timeInSeconds = (scoreData.drawingTime / 1000).toFixed(1);
+        const quality = this.formatScore(scoreData.qualityScore, 3);
         
         // シェア用テキスト
         const shareText = `「円を描け！」で${quality}点を獲得しました！🎯\n\n完璧な円を目指そう！\n${window.location.href}\n\n#円を描け #DrawCircle`;
@@ -669,14 +681,14 @@ class UIManager {
                 }
                 
                 // ファイル名を生成
-                const score = Math.round(scoreData.totalScore);
-                const fileName = `円を描け_${score}点.png`;
+                const quality = this.formatScore(scoreData.qualityScore, 3);
+                const fileName = `円を描け_${quality}点.png`;
                 
                 // Fileオブジェクトを作成
                 const file = new File([blob], fileName, { type: 'image/png' });
                 
                 // シェア用テキスト
-                const shareText = `「円を描け！」で${score}点を獲得しました！🎯\n\n完璧な円を目指そう！\n#円を描け #DrawCircle`;
+                const shareText = `「円を描け！」で${quality}点を獲得しました！🎯\n\n完璧な円を目指そう！\n#円を描け #DrawCircle`;
                 
                 try {
                     // Web Share APIでシェア
