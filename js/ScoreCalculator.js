@@ -8,28 +8,12 @@ class ScoreCalculator {
     constructor() {
         // スコア計算の設定値
         this.config = {
-            // 品質スコア設定（より厳密な評価）
+            // 品質スコア設定
             quality: {
                 maxScore: 100,
-                circularityWeight: 0.5,    // 円形度の重み（0.4 → 0.5に増加）
-                closureWeight: 0.35,       // 閉じ具合の重み（0.3 → 0.35に増加）
-                smoothnessWeight: 0.15     // 滑らかさの重み（0.3 → 0.15に減少）
-            },
-
-            // スピード倍率設定（品質重視のため範囲を縮小）
-            speed: {
-                maxMultiplier: 1.5,  // 3.0 → 1.5に縮小
-                minMultiplier: 0.5,  // 0.1 → 0.5に縮小
-                optimalTime: 300,    // 200ms → 300msに緩和
-                maxTime: 8000        // 5000ms → 8000msに緩和
-            },
-
-            // サイズ倍率設定（品質重視のため範囲を縮小）
-            size: {
-                maxMultiplier: 1.3,  // 3.0 → 1.3に縮小
-                minMultiplier: 0.7,  // 0.1 → 0.7に縮小
-                minDiameter: 30,     // 50px → 30pxに緩和
-                optimalRatio: 0.6    // 0.8 → 0.6に緩和（より小さい円でも高評価）
+                circularityWeight: 0.5,    // 円形度の重み
+                closureWeight: 0.35,       // 閉じ具合の重み
+                smoothnessWeight: 0.15     // 滑らかさの重み
             }
         };
 
@@ -39,11 +23,9 @@ class ScoreCalculator {
     /**
      * 円品質スコアの計算（0-100点）
      * @param {Object} path - 描画パスデータ
-     * @param {number} canvasWidth - Canvasの幅
-     * @param {number} canvasHeight - Canvasの高さ
      * @returns {number} 品質スコア（0-100）
      */
-    calculateCircleQuality(path, canvasWidth = 400, canvasHeight = 400) {
+    calculateCircleQuality(path) {
         if (!path || !path.points || path.points.length < 3) {
             return 0;
         }
@@ -254,287 +236,11 @@ class ScoreCalculator {
     }
 
     /**
-     * スピード倍率の計算
-     * @param {number} drawingTime - 描画時間（ミリ秒）
-     * @returns {number} スピード倍率（0.1-3.0）
-     */
-    calculateSpeedScore(drawingTime) {
-        if (drawingTime <= 0) return this.config.speed.minMultiplier;
-
-        const { optimalTime, maxTime, maxMultiplier, minMultiplier } = this.config.speed;
-
-        // 最適時間以下の場合は最大倍率
-        if (drawingTime <= optimalTime) {
-            return maxMultiplier;
-        }
-
-        // 最大時間以上の場合は最小倍率
-        if (drawingTime >= maxTime) {
-            return minMultiplier;
-        }
-
-        // 指数関数的に減少する倍率計算
-        // 時間が長くなるほど急激にスコアが下がる
-        const timeRatio = (drawingTime - optimalTime) / (maxTime - optimalTime);
-        const exponentialDecay = Math.pow(minMultiplier / maxMultiplier, timeRatio);
-        const speedMultiplier = maxMultiplier * exponentialDecay;
-
-        // 範囲をクランプ
-        const finalMultiplier = Math.max(minMultiplier, Math.min(maxMultiplier, speedMultiplier));
-
-        console.log(`スピード倍率計算: 時間=${drawingTime}ms, 倍率=${finalMultiplier.toFixed(3)}`);
-
-        return Math.round(finalMultiplier * 1000) / 1000; // 小数点3桁で丸める
-    }
-
-    /**
-     * 描画時間の測定と記録
-     * @param {Object} path - 描画パスデータ
-     * @returns {number} 描画時間（ミリ秒）
-     */
-    measureDrawingTime(path) {
-        if (!path || !path.startTime || !path.endTime) {
-            console.warn('描画時間の測定に必要なデータが不足しています');
-            return 0;
-        }
-
-        const drawingTime = path.endTime - path.startTime;
-
-        // 異常に短い時間や長い時間をフィルタリング
-        if (drawingTime < 50) {
-            console.warn(`描画時間が異常に短いです: ${drawingTime}ms`);
-            return 50; // 最小時間を設定
-        }
-
-        if (drawingTime > 30000) {
-            console.warn(`描画時間が異常に長いです: ${drawingTime}ms`);
-            return 30000; // 最大時間を設定
-        }
-
-        console.log(`描画時間測定: ${drawingTime}ms`);
-        return drawingTime;
-    }
-
-    /**
-     * 時間に基づく倍率計算アルゴリズム（詳細版）
-     * @param {number} drawingTime - 描画時間（ミリ秒）
-     * @param {Object} options - 計算オプション
-     * @returns {Object} 詳細なスピード分析結果
-     */
-    analyzeSpeedPerformance(drawingTime, options = {}) {
-        const {
-            showDetails = false,
-            customOptimalTime = null,
-            customMaxTime = null
-        } = options;
-
-        const optimalTime = customOptimalTime || this.config.speed.optimalTime;
-        const maxTime = customMaxTime || this.config.speed.maxTime;
-
-        // 基本的なスピード倍率
-        const speedMultiplier = this.calculateSpeedScore(drawingTime);
-
-        // パフォーマンス分類
-        let performanceLevel = '';
-        let performanceMessage = '';
-
-        if (drawingTime <= optimalTime) {
-            performanceLevel = 'excellent';
-            performanceMessage = '素晴らしいスピードです！';
-        } else if (drawingTime <= optimalTime * 2) {
-            performanceLevel = 'good';
-            performanceMessage = '良いスピードです';
-        } else if (drawingTime <= optimalTime * 4) {
-            performanceLevel = 'average';
-            performanceMessage = '平均的なスピードです';
-        } else if (drawingTime <= maxTime) {
-            performanceLevel = 'slow';
-            performanceMessage = 'もう少し速く描いてみましょう';
-        } else {
-            performanceLevel = 'very_slow';
-            performanceMessage = 'かなりゆっくりです';
-        }
-
-        const result = {
-            drawingTime,
-            speedMultiplier,
-            performanceLevel,
-            performanceMessage,
-            isOptimal: drawingTime <= optimalTime,
-            timeRatio: drawingTime / optimalTime
-        };
-
-        if (showDetails) {
-            console.log('スピード分析結果:', result);
-        }
-
-        return result;
-    }
-
-    /**
-     * サイズ倍率の計算
-     * @param {number} diameter - 円の直径（ピクセル）
-     * @param {number} canvasWidth - Canvasの幅
-     * @param {number} canvasHeight - Canvasの高さ
-     * @returns {number} サイズ倍率（0.1-3.0）
-     */
-    calculateSizeScore(diameter, canvasWidth = 400, canvasHeight = 400) {
-        if (diameter <= 0) return this.config.size.minMultiplier;
-
-        const { minDiameter, optimalRatio, maxMultiplier, minMultiplier } = this.config.size;
-
-        // 最大直径を画面サイズから計算
-        const maxDiameter = Math.min(canvasWidth, canvasHeight) * optimalRatio;
-
-        // 最小直径以下の場合は最小倍率
-        if (diameter <= minDiameter) {
-            return minMultiplier;
-        }
-
-        // 最大直径以上の場合は最大倍率
-        if (diameter >= maxDiameter) {
-            return maxMultiplier;
-        }
-
-        // 線形に増加する倍率計算
-        const sizeRatio = (diameter - minDiameter) / (maxDiameter - minDiameter);
-        const sizeMultiplier = minMultiplier + (maxMultiplier - minMultiplier) * sizeRatio;
-
-        // 範囲をクランプ
-        const finalMultiplier = Math.max(minMultiplier, Math.min(maxMultiplier, sizeMultiplier));
-
-        console.log(`サイズ倍率計算: 直径=${diameter.toFixed(1)}px, 最大=${maxDiameter.toFixed(1)}px, 倍率=${finalMultiplier.toFixed(2)}`);
-
-        return Math.round(finalMultiplier * 100) / 100; // 小数点2桁で丸める
-    }
-
-    /**
-     * 円の直径を計算
-     * @param {Array} points - 描画点の配列
-     * @returns {number} 円の直径（ピクセル）
-     */
-    calculateDiameter(points) {
-        if (!points || points.length < 2) {
-            return 0;
-        }
-
-        // 描画範囲の境界を取得
-        const bounds = this.calculateBounds(points);
-
-        // 幅と高さから直径を計算（より大きい方を採用）
-        const width = bounds.maxX - bounds.minX;
-        const height = bounds.maxY - bounds.minY;
-        const diameter = Math.max(width, height);
-
-        console.log(`直径計算: 幅=${width.toFixed(1)}px, 高さ=${height.toFixed(1)}px, 直径=${diameter.toFixed(1)}px`);
-
-        return diameter;
-    }
-
-    /**
-     * より正確な円の直径計算（中心からの最大距離を使用）
-     * @param {Array} points - 描画点の配列
-     * @returns {number} 円の直径（ピクセル）
-     */
-    calculateDiameterFromCenter(points) {
-        if (!points || points.length < 2) {
-            return 0;
-        }
-
-        // 円の中心を計算
-        const center = this.calculateCenter(points);
-
-        // 中心からの最大距離を求める
-        let maxDistance = 0;
-        for (const point of points) {
-            const distance = Math.sqrt(
-                Math.pow(point.x - center.x, 2) +
-                Math.pow(point.y - center.y, 2)
-            );
-            maxDistance = Math.max(maxDistance, distance);
-        }
-
-        // 直径は最大距離の2倍
-        const diameter = maxDistance * 2;
-
-        console.log(`中心基準直径計算: 中心=(${center.x.toFixed(1)}, ${center.y.toFixed(1)}), 最大距離=${maxDistance.toFixed(1)}px, 直径=${diameter.toFixed(1)}px`);
-
-        return diameter;
-    }
-
-    /**
-     * サイズに基づく倍率計算アルゴリズム（詳細版）
-     * @param {Array} points - 描画点の配列
-     * @param {number} canvasWidth - Canvasの幅
-     * @param {number} canvasHeight - Canvasの高さ
-     * @param {Object} options - 計算オプション
-     * @returns {Object} 詳細なサイズ分析結果
-     */
-    analyzeSizePerformance(points, canvasWidth = 400, canvasHeight = 400, options = {}) {
-        const {
-            showDetails = false,
-            useAccurateDiameter = true,
-            customMinDiameter = null
-        } = options;
-
-        // 直径を計算（正確な方法または境界ベース）
-        const diameter = useAccurateDiameter
-            ? this.calculateDiameterFromCenter(points)
-            : this.calculateDiameter(points);
-
-        // サイズ倍率を計算
-        const sizeMultiplier = this.calculateSizeScore(diameter, canvasWidth, canvasHeight);
-
-        // 画面サイズに対する比率
-        const maxPossibleDiameter = Math.min(canvasWidth, canvasHeight) * this.config.size.optimalRatio;
-        const screenRatio = diameter / maxPossibleDiameter;
-
-        // サイズ分類
-        let sizeLevel = '';
-        let sizeMessage = '';
-
-        if (diameter >= maxPossibleDiameter * 0.8) {
-            sizeLevel = 'excellent';
-            sizeMessage = '素晴らしい大きさです！';
-        } else if (diameter >= maxPossibleDiameter * 0.6) {
-            sizeLevel = 'good';
-            sizeMessage = '良いサイズです';
-        } else if (diameter >= maxPossibleDiameter * 0.4) {
-            sizeLevel = 'average';
-            sizeMessage = '平均的なサイズです';
-        } else if (diameter >= this.config.size.minDiameter) {
-            sizeLevel = 'small';
-            sizeMessage = 'もう少し大きく描いてみましょう';
-        } else {
-            sizeLevel = 'very_small';
-            sizeMessage = 'かなり小さいです';
-        }
-
-        const result = {
-            diameter,
-            sizeMultiplier,
-            sizeLevel,
-            sizeMessage,
-            screenRatio,
-            maxPossibleDiameter,
-            isOptimal: diameter >= maxPossibleDiameter * 0.8
-        };
-
-        if (showDetails) {
-            console.log('サイズ分析結果:', result);
-        }
-
-        return result;
-    }
-
-    /**
      * 最終スコアの計算（品質のみ）
      * @param {number} qualityScore - 品質スコア（0-100）
-     * @param {number} speedMultiplier - スピード倍率（参考値として保持）
-     * @param {number} sizeMultiplier - サイズ倍率（参考値として保持）
      * @returns {number} 最終スコア
      */
-    calculateTotalScore(qualityScore, speedMultiplier, sizeMultiplier) {
+    calculateTotalScore(qualityScore) {
         // 入力値の検証
         if (qualityScore < 0) {
             console.warn('スコア計算で負の値が検出されました');
@@ -544,111 +250,35 @@ class ScoreCalculator {
         // 品質スコアがそのまま最終スコア
         const finalScore = Math.round(qualityScore);
 
-        console.log(`品質のみスコア計算: 品質=${qualityScore} = 最終スコア=${finalScore}`);
+        console.log(`スコア計算: 品質=${qualityScore} = 最終スコア=${finalScore}`);
 
         return finalScore;
     }
 
     /**
-     * 包括的なスコア計算（全要素を統合）
+     * 包括的なスコア計算
      * @param {Object} path - 描画パスデータ
-     * @param {number} canvasWidth - Canvasの幅
-     * @param {number} canvasHeight - Canvasの高さ
-     * @param {Object} options - 計算オプション
      * @returns {Object} 完全なスコアデータ
      */
-    calculateCompleteScore(path, canvasWidth = 400, canvasHeight = 400, options = {}) {
-        const {
-            showDetails = false,
-            useAccurateDiameter = true
-        } = options;
-
-        // 描画時間を測定
-        const drawingTime = this.measureDrawingTime(path);
-
-        // 各要素を計算
-        const qualityScore = this.calculateCircleQuality(path, canvasWidth, canvasHeight);
-        const speedMultiplier = this.calculateSpeedScore(drawingTime);
-
-        // 直径を計算
-        const diameter = useAccurateDiameter
-            ? this.calculateDiameterFromCenter(path.points)
-            : this.calculateDiameter(path.points);
-
-        const sizeMultiplier = this.calculateSizeScore(diameter, canvasWidth, canvasHeight);
+    calculateCompleteScore(path) {
+        // 品質スコアを計算
+        const qualityScore = this.calculateCircleQuality(path);
 
         // 最終スコアを計算
-        const totalScore = this.calculateTotalScore(qualityScore, speedMultiplier, sizeMultiplier);
-
-        // 詳細分析（オプション）
-        const speedAnalysis = showDetails
-            ? this.analyzeSpeedPerformance(drawingTime, { showDetails: false })
-            : null;
-
-        const sizeAnalysis = showDetails
-            ? this.analyzeSizePerformance(path.points, canvasWidth, canvasHeight, { showDetails: false, useAccurateDiameter })
-            : null;
+        const totalScore = this.calculateTotalScore(qualityScore);
 
         // スコアデータ構造を作成
         const scoreData = {
-            // 基本スコア情報
             qualityScore,
-            speedMultiplier,
-            sizeMultiplier,
             totalScore,
-
-            // 測定値
-            drawingTime,
-            diameter,
-
-            // メタデータ
             timestamp: Date.now(),
             pathId: path.id || null,
-            pointCount: path.points ? path.points.length : 0,
-
-            // 詳細分析（オプション）
-            speedAnalysis,
-            sizeAnalysis,
-
-            // パフォーマンス評価
-            performance: this.evaluateOverallPerformance(qualityScore, speedMultiplier, sizeMultiplier)
+            pointCount: path.points ? path.points.length : 0
         };
 
-        if (showDetails) {
-            console.log('完全スコア計算結果:', scoreData);
-        }
+        console.log('スコア計算結果:', scoreData);
 
         return scoreData;
-    }
-
-    /**
-     * 総合パフォーマンス評価
-     * @param {number} qualityScore - 品質スコア
-     * @param {number} speedMultiplier - スピード倍率
-     * @param {number} sizeMultiplier - サイズ倍率
-     * @returns {Object} パフォーマンス評価
-     */
-    evaluateOverallPerformance(qualityScore, speedMultiplier, sizeMultiplier) {
-        // 各要素の評価レベルを計算
-        const qualityLevel = this.getQualityLevel(qualityScore);
-        const speedLevel = this.getSpeedLevel(speedMultiplier);
-        const sizeLevel = this.getSizeLevel(sizeMultiplier);
-
-        // 総合評価を計算
-        const averageScore = (qualityScore + (speedMultiplier * 33.33) + (sizeMultiplier * 33.33)) / 3;
-        const overallLevel = this.getOverallLevel(averageScore);
-
-        // 改善提案を生成
-        const suggestions = this.generateImprovementSuggestions(qualityLevel, speedLevel, sizeLevel);
-
-        return {
-            qualityLevel,
-            speedLevel,
-            sizeLevel,
-            overallLevel,
-            averageScore: Math.round(averageScore),
-            suggestions
-        };
     }
 
     /**
@@ -662,85 +292,6 @@ class ScoreCalculator {
         if (qualityScore >= 40) return 'average';
         if (qualityScore >= 20) return 'poor';
         return 'very_poor';
-    }
-
-    /**
-     * スピードレベルの判定
-     * @param {number} speedMultiplier - スピード倍率
-     * @returns {string} スピードレベル
-     */
-    getSpeedLevel(speedMultiplier) {
-        if (speedMultiplier >= 2.5) return 'excellent';
-        if (speedMultiplier >= 1.5) return 'good';
-        if (speedMultiplier >= 0.8) return 'average';
-        if (speedMultiplier >= 0.3) return 'slow';
-        return 'very_slow';
-    }
-
-    /**
-     * サイズレベルの判定
-     * @param {number} sizeMultiplier - サイズ倍率
-     * @returns {string} サイズレベル
-     */
-    getSizeLevel(sizeMultiplier) {
-        if (sizeMultiplier >= 2.5) return 'excellent';
-        if (sizeMultiplier >= 1.5) return 'good';
-        if (sizeMultiplier >= 0.8) return 'average';
-        if (sizeMultiplier >= 0.3) return 'small';
-        return 'very_small';
-    }
-
-    /**
-     * 総合レベルの判定
-     * @param {number} averageScore - 平均スコア
-     * @returns {string} 総合レベル
-     */
-    getOverallLevel(averageScore) {
-        if (averageScore >= 80) return 'master';
-        if (averageScore >= 60) return 'skilled';
-        if (averageScore >= 40) return 'intermediate';
-        if (averageScore >= 20) return 'beginner';
-        return 'novice';
-    }
-
-    /**
-     * 改善提案の生成
-     * @param {string} qualityLevel - 品質レベル
-     * @param {string} speedLevel - スピードレベル
-     * @param {string} sizeLevel - サイズレベル
-     * @returns {Array} 改善提案の配列
-     */
-    generateImprovementSuggestions(qualityLevel, speedLevel, sizeLevel) {
-        const suggestions = [];
-
-        // 品質に関する提案
-        if (qualityLevel === 'poor' || qualityLevel === 'very_poor') {
-            suggestions.push('より丸く、滑らかな円を描くよう心がけましょう');
-            suggestions.push('開始点と終了点をできるだけ近づけて閉じた円にしましょう');
-        } else if (qualityLevel === 'average') {
-            suggestions.push('一定の速度で描くとより滑らかな円になります');
-        }
-
-        // スピードに関する提案
-        if (speedLevel === 'slow' || speedLevel === 'very_slow') {
-            suggestions.push('もう少し速く描いてスピードボーナスを獲得しましょう');
-        } else if (speedLevel === 'excellent') {
-            suggestions.push('素晴らしいスピードです！この調子を保ちましょう');
-        }
-
-        // サイズに関する提案
-        if (sizeLevel === 'small' || sizeLevel === 'very_small') {
-            suggestions.push('より大きな円を描いてサイズボーナスを獲得しましょう');
-        } else if (sizeLevel === 'excellent') {
-            suggestions.push('完璧なサイズです！');
-        }
-
-        // 総合的な提案
-        if (suggestions.length === 0) {
-            suggestions.push('素晴らしい円です！この調子で続けましょう');
-        }
-
-        return suggestions;
     }
 
     /**

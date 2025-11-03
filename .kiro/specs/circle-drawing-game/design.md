@@ -79,6 +79,9 @@ class DrawingEngine {
 ```javascript
 class ScoreCalculator {
   calculateCircleQuality(path) // 0-100点、小数点以下3桁まで計算
+  calculateTotalScore(qualityScore) // 品質スコアから最終スコアを計算
+  calculateCompleteScore(path) // 包括的なスコアデータを返す
+  getQualityLevel(qualityScore) // 品質レベルの判定
 }
 ```
 
@@ -116,11 +119,10 @@ class UIManager {
 ```javascript
 {
   qualityScore: number,      // 0-100（小数点以下3桁）
-  circularity: number,       // 円形度（小数点以下4桁）
-  closure: number,           // 閉じ具合（小数点以下4桁）
-  smoothness: number,        // 滑らかさ（小数点以下4桁）
-  drawingTime: number,       // 描画時間（ミリ秒）
-  diameter: number           // 円の直径（ピクセル）
+  totalScore: number,        // 最終スコア（整数）
+  timestamp: number,         // スコア計算時刻（ミリ秒）
+  pathId: number | null,     // 描画パスID
+  pointCount: number         // 描画点の数
 }
 ```
 
