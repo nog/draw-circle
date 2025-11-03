@@ -68,7 +68,8 @@ class DrawingEngine {
   continueDrawing(x, y, timestamp)
   endDrawing(timestamp)
   getDrawingPath()
-  clearCanvas()
+  clearCanvas(clearHistory)
+  onDrawingComplete(path) // 描画完了時のコールバック
 }
 ```
 
@@ -91,11 +92,17 @@ class ScoreCalculator {
 
 ```javascript
 class UIManager {
-  updateScore(score)
-  showScoreAnimation(score)
-  showFeedback(message, type)
-  updateGameState(state)
+  initialize() // UI要素を初期化
+  showResultModal(scoreData, circleImageData) // 結果モーダルを表示
+  hideResultModal() // 結果モーダルを非表示
+  updateScoreDisplay(scoreData) // スコア表示を更新
+  showScoreBreakdown(breakdown) // スコア内訳を10段階評価で表示
+  drawCirclePreview(circleImageData) // プレビューキャンバスに円を描画（理想円と中心点を含む）
+  updateEvaluationMessage(scoreData) // 評価メッセージを更新
   formatScore(value, decimals = 3) // スコアを指定桁数でフォーマット
+  shareDirectly() // 結果を直接シェア（モーダル内容を含む画像を生成）
+  generateScreenshotForShare() // シェア用スクリーンショットを生成（10段階評価を含む）
+  clearFeedback() // フィードバックをクリア
 }
 ```
 
@@ -122,7 +129,16 @@ class UIManager {
   totalScore: number,        // 最終スコア（整数）
   timestamp: number,         // スコア計算時刻（ミリ秒）
   pathId: number | null,     // 描画パスID
-  pointCount: number         // 描画点の数
+  pointCount: number,        // 描画点の数
+  breakdown: {               // スコア内訳
+    circularity: number,     // 円形度（0-100、小数点以下4桁）
+    closure: number,         // 始点終点距離（0-100、小数点以下4桁）
+    smoothness: number       // 滑らかさ（0-100、小数点以下4桁）
+  },
+  idealCircle: {             // 理想円の情報
+    center: { x: number, y: number },
+    radius: number
+  }
 }
 ```
 
@@ -145,7 +161,7 @@ class UIManager {
 円の品質は以下の要素で評価されます：
 
 - **円形度**: 描画パスが理想的な円にどれだけ近いか（小数点以下4桁で計算）
-- **閉じ具合**: 開始点と終了点の距離（小数点以下4桁で計算）
+- **始点終点距離**: 開始点と終了点の距離（小数点以下4桁で計算）
 - **滑らかさ**: パス上の点の分布の均一性（小数点以下4桁で計算）
 
 ```javascript
@@ -158,7 +174,7 @@ function calculateCircularity(points) {
   return Math.round(circularity * 10000) / 10000; // 小数点以下4桁
 }
 
-// 閉じ具合の計算（小数点以下4桁）
+// 始点終点距離の計算（小数点以下4桁）
 function calculateClosure(points) {
   // ... 計算処理 ...
   const closure = Math.max(0, 100 - (distanceRatio * 300));
@@ -181,7 +197,7 @@ function calculateCircleQuality(path) {
   // 重み付き合計
   const qualityScore = 
     circularity * 0.5 +    // 円形度の重み
-    closure * 0.35 +       // 閉じ具合の重み
+    closure * 0.35 +       // 始点終点距離の重み
     smoothness * 0.15;     // 滑らかさの重み
   
   // 最終スコアは小数点以下3桁
@@ -229,6 +245,113 @@ function calculateCircleQuality(path) {
 - Android Chrome での動作確認
 - 異なる画面サイズでの表示確認
 - タッチ精度とレスポンス時間の測定
+
+## 視覚的フィードバックの設計
+
+### スコア内訳の表示
+
+円の評価結果を視覚的に理解しやすくするため、結果モーダルのプレビューキャンバスに以下の要素を表示します：
+
+#### 理想円と中心点の表示
+
+結果モーダルのプレビューキャンバス（`#previewCanvas`）に、描いた円と共に理想円と中心点を重ねて表示します。これにより、プレイヤーは自分の円と理想的な円を視覚的に比較できます。
+
+```javascript
+// 理想円の描画
+function drawIdealCircle(ctx, center, radius) {
+  ctx.save();
+  ctx.strokeStyle = 'rgba(100, 150, 255, 0.5)'; // 半透明の青
+  ctx.lineWidth = 2;
+  ctx.setLineDash([5, 5]); // 点線
+  ctx.beginPath();
+  ctx.arc(center.x, center.y, radius, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.restore();
+}
+
+// 中心点の描画
+function drawCenterPoint(ctx, center) {
+  ctx.save();
+  ctx.fillStyle = 'rgba(255, 100, 100, 0.8)'; // 半透明の赤
+  ctx.beginPath();
+  ctx.arc(center.x, center.y, 5, 0, Math.PI * 2);
+  ctx.fill();
+  // 十字マーカー
+  ctx.strokeStyle = 'rgba(255, 100, 100, 0.8)';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(center.x - 10, center.y);
+  ctx.lineTo(center.x + 10, center.y);
+  ctx.moveTo(center.x, center.y - 10);
+  ctx.lineTo(center.x, center.y + 10);
+  ctx.stroke();
+  ctx.restore();
+}
+```
+
+#### スコア内訳の10段階評価表示
+
+各評価要素（円形度、始点終点距離、滑らかさ）を10段階評価（0-10の整数）で表示します：
+
+```javascript
+function showScoreBreakdown(breakdown) {
+  // 100点満点を10段階に変換（0-10の整数）
+  const circularityValue = Math.round(Math.min(100, Math.max(0, breakdown.circularity)) / 10);
+  const closureValue = Math.round(Math.min(100, Math.max(0, breakdown.closure)) / 10);
+  const smoothnessValue = Math.round(Math.min(100, Math.max(0, breakdown.smoothness)) / 10);
+
+  // 各スコア表示要素を取得
+  const circularityScore = document.getElementById('circularityScore');
+  const closureScore = document.getElementById('closureScore');
+  const smoothnessScore = document.getElementById('smoothnessScore');
+
+  // 10段階評価を表示
+  circularityScore.textContent = circularityValue;
+  closureScore.textContent = closureValue;
+  smoothnessScore.textContent = smoothnessValue;
+}
+```
+
+#### CSS スタイル
+
+```css
+.score-breakdown {
+  display: flex;
+  justify-content: space-around;
+  margin-top: 20px;
+  padding: 15px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+}
+
+.score-item {
+  text-align: center;
+}
+
+.score-label {
+  font-size: 12px;
+  color: #a0a0a0;
+  margin-bottom: 5px;
+}
+
+.score-value {
+  font-size: 24px;
+  font-weight: bold;
+  color: #00d4ff;
+}
+```
+
+### コンソールログの削除
+
+スコア計算時のコンソールログ出力を削除し、視覚的フィードバックのみに集中します：
+
+```javascript
+// 削除する例
+// console.log('Circularity:', circularity);
+// console.log('Closure:', closure);
+// console.log('Smoothness:', smoothness);
+// console.log('Quality Score:', qualityScore);
+```
 
 ## パフォーマンス最適化
 
@@ -386,7 +509,52 @@ SNS共有用の画像は以下の仕様で作成します：
 1. **静的メタタグ**: 基本的なOGP/Twitter Cardタグは静的にHTMLに記述
 2. **画像の事前準備**: OGP画像は事前に作成してサーバーに配置
 3. **URLの絶対パス**: すべての画像URLは絶対パス（https://から始まる完全なURL）で指定
-4. **テスト方法**: 
+4. **動的シェア画像生成**: シェアボタン押下時に、モーダル表示内容（描いた円、理想円、中心点、10段階評価）を含む画像を動的に生成
+5. **テスト方法**: 
    - Facebook Sharing Debugger: https://developers.facebook.com/tools/debug/
    - Twitter Card Validator: https://cards-dev.twitter.com/validator
    - LinkedIn Post Inspector: https://www.linkedin.com/post-inspector/
+
+## シェア画像の動的生成設計
+
+### シェア画像の構成要素
+
+シェアボタン押下時に生成される画像には、結果モーダルに表示されているすべての情報を含めます：
+
+1. **背景とタイトル**: ゲームタイトル「円を描け！」
+2. **円のビジュアル**:
+   - 描いた円（光る青色の線）
+   - 理想円（点線、半透明の青）
+   - 中心点（十字マーカー、半透明の赤）
+3. **スコア情報**:
+   - 品質スコア（小数点以下3桁）
+   - 評価レベル（マスター、エキスパート等）
+4. **スコア内訳の10段階評価**:
+   - 円形度: 0-10の整数
+   - 始点終点距離: 0-10の整数
+   - 滑らかさ: 0-10の整数
+5. **URL・ハッシュタグ**: ゲームURLと#円を描け
+
+### 実装メソッド
+
+```javascript
+// シェア用スクリーンショット生成（10段階評価を含む）
+generateScreenshotForShare() {
+  // 1080x1080のCanvasを作成
+  // 背景、タイトル、円（理想円・中心点含む）を描画
+  // スコア情報を描画
+  // 10段階評価を描画（円形度、始点終点距離、滑らかさ）
+  // Web Share APIでシェア
+}
+
+// 10段階評価をシェア画像に描画
+drawScreenshotScoreBreakdown(ctx, breakdown, width, height) {
+  // 100点満点を10段階に変換
+  const circularityValue = Math.round(breakdown.circularity / 10);
+  const closureValue = Math.round(breakdown.closure / 10);
+  const smoothnessValue = Math.round(breakdown.smoothness / 10);
+  
+  // 各評価項目をテキストで描画
+  // 例: "円形度: 8/10"
+}
+```

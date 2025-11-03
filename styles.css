@@ -121,7 +121,7 @@ html, body {
 /* 結果画面タイトル */
 .result-title {
     text-align: center;
-    margin-bottom: 20px;
+    margin-bottom: 15px;
 }
 
 .result-title h2 {
@@ -129,7 +129,7 @@ html, body {
     font-weight: bold;
     color: #00d4ff;
     text-shadow: 0 0 15px rgba(0, 212, 255, 0.5);
-    margin-bottom: 5px;
+    margin-bottom: 0;
 }
 
 .result-title p {
@@ -140,7 +140,7 @@ html, body {
 
 /* 円のプレビュー */
 .circle-preview {
-    margin-bottom: 25px;
+    margin-bottom: 15px;
 }
 
 .preview-canvas {
@@ -154,7 +154,7 @@ html, body {
 
 /* スコアセクション */
 .score-section {
-    margin-bottom: 25px;
+    margin-bottom: 20px;
 }
 
 .main-score {
@@ -162,7 +162,7 @@ html, body {
     justify-content: center;
     align-items: baseline;
     gap: 8px;
-    margin-bottom: 20px;
+    margin-bottom: 15px;
 }
 
 .score-value {
@@ -214,6 +214,40 @@ html, body {
 }
 
 
+
+/* スコア内訳（10段階評価・コンパクト表示） */
+.score-breakdown-compact {
+    display: flex;
+    justify-content: space-around;
+    gap: 15px;
+    margin: 0 auto 15px;
+    padding: 10px 15px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    max-width: 320px;
+}
+
+.score-item-compact {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+.score-item-label {
+    font-size: 11px;
+    color: #a0a0a0;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+}
+
+.score-item-value {
+    font-size: 24px;
+    font-weight: bold;
+    color: #00d4ff;
+    text-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+}
 
 .evaluation-message {
     font-size: 18px;
@@ -457,12 +491,12 @@ html, body {
     }
     
     .result-title {
-        margin-bottom: 15px;
+        margin-bottom: 12px;
     }
     
     .result-title h2 {
         font-size: 22px;
-        margin-bottom: 3px;
+        margin-bottom: 0;
     }
     
     .result-title p {
@@ -477,7 +511,7 @@ html, body {
     }
     
     .circle-preview {
-        margin-bottom: 15px;
+        margin-bottom: 12px;
     }
     
     .preview-canvas {
@@ -486,11 +520,11 @@ html, body {
     }
     
     .score-section {
-        margin-bottom: 15px;
+        margin-bottom: 12px;
     }
     
     .main-score {
-        margin-bottom: 15px;
+        margin-bottom: 12px;
     }
     
     .score-value {
@@ -523,6 +557,24 @@ html, body {
     .detail-sub {
         font-size: 9px;
     }
+    
+    /* スコア内訳のモバイル最適化 */
+    .score-breakdown-compact {
+        max-width: 100%;
+        padding: 8px 12px;
+        margin-bottom: 12px;
+        gap: 10px;
+    }
+    
+    .score-item-label {
+        font-size: 10px;
+    }
+    
+    .score-item-value {
+        font-size: 20px;
+    }
+    
+
     
     .evaluation-message {
         font-size: 14px;
@@ -558,7 +610,7 @@ html, body {
     }
     
     .result-title {
-        margin-bottom: 15px;
+        margin-bottom: 10px;
     }
     
     .result-title h2 {
@@ -566,19 +618,40 @@ html, body {
     }
     
     .result-content {
-        padding: 15px;
+        padding: 12px;
         max-height: 85vh;
         overflow-y: auto;
     }
     
+    .circle-preview {
+        margin-bottom: 10px;
+    }
+    
     .preview-canvas {
-        width: 120px;
-        height: 120px;
+        width: 100px;
+        height: 100px;
     }
     
     .score-value {
         font-size: 48px;
     }
+    
+    /* スコア内訳の横向き最適化 */
+    .score-breakdown-compact {
+        padding: 6px 10px;
+        margin-bottom: 10px;
+        gap: 8px;
+    }
+    
+    .score-item-label {
+        font-size: 9px;
+    }
+    
+    .score-item-value {
+        font-size: 18px;
+    }
+    
+
     
     .action-buttons {
         flex-direction: row;

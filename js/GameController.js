@@ -2,8 +2,6 @@
  * GameController - ゲーム状態管理クラス
  * ゲーム全体の状態管理とコンポーネント間の調整を行います
  */
-console.log('GameController.js が読み込まれました');
-
 class GameController {
     constructor() {
         // ゲーム状態
@@ -26,8 +24,6 @@ class GameController {
         
         // イベントリスナー
         this.eventListeners = new Map();
-        
-        console.log('GameController が初期化されました');
     }
     
     /**
@@ -52,8 +48,6 @@ class GameController {
         
         // ローカルストレージからベストスコアを読み込み
         this.loadBestScore();
-        
-        console.log('GameController のコンポーネント初期化が完了しました');
     }
     
     /**
@@ -65,8 +59,6 @@ class GameController {
         
         // イベントの発火
         this.emitEvent('gameStarted', this.gameState);
-        
-        console.log('ゲームが開始されました');
     }
     
     /**
@@ -83,8 +75,6 @@ class GameController {
         
         // イベントの発火
         this.emitEvent('gameEnded', this.gameState);
-        
-        console.log('ゲームが終了されました');
     }
     
     /**
@@ -109,8 +99,6 @@ class GameController {
         
         // イベントの発火
         this.emitEvent('gameReset', this.gameState);
-        
-        console.log('ゲームがリセットされました');
     }
     
     /**
@@ -126,8 +114,6 @@ class GameController {
         if (this.uiManager) {
             this.uiManager.clearFeedback();
         }
-        
-        console.log('次の円の準備が完了しました');
     }
     
     /**
@@ -140,16 +126,8 @@ class GameController {
         }
         
         try {
-            // Canvasサイズを取得
-            const canvas = this.drawingEngine.canvas;
-            const canvasWidth = canvas ? canvas.width : 400;
-            const canvasHeight = canvas ? canvas.height : 400;
-            
             // スコア計算（完全版を使用）
-            const scoreData = this.scoreCalculator.calculateCompleteScore(path, canvasWidth, canvasHeight, {
-                showDetails: true,
-                useAccurateDiameter: true
-            });
+            const scoreData = this.scoreCalculator.calculateCompleteScore(path);
             
             // ゲーム状態の更新
             this.updateScore(scoreData);
@@ -161,8 +139,6 @@ class GameController {
             if (this.uiManager) {
                 this.uiManager.showResultModal(scoreData, path);
             }
-            
-            console.log('描画完了処理が完了しました:', scoreData);
             
         } catch (error) {
             console.error('描画完了処理でエラーが発生しました:', error);
@@ -335,7 +311,5 @@ class GameController {
         this.drawingEngine = null;
         this.scoreCalculator = null;
         this.uiManager = null;
-        
-        console.log('GameController が破棄されました');
     }
 }

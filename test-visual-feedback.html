@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>視覚的フィードバック機能テスト</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background: #1a1a2e;
+            color: white;
+            font-family: Arial, sans-serif;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        h1 {
+            text-align: center;
+            color: #00d4ff;
+        }
+        canvas {
+            display: block;
+            margin: 20px auto;
+            background: #16213e;
+            border: 2px solid #00d4ff;
+            border-radius: 10px;
+            cursor: crosshair;
+        }
+        .info {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .success {
+            color: #00ff88;
+        }
+        .instruction {
+            background: rgba(0, 212, 255, 0.2);
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+            border-left: 4px solid #00d4ff;
+        }
+        
+        /* スコア内訳バーグラフのスタイル */
+        .score-breakdown {
+            margin: 15px 0;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+        }
+        .score-bar {
+            margin-bottom: 12px;
+        }
+        .score-bar:last-child {
+            margin-bottom: 0;
+        }
+        .score-bar-label {
+            font-size: 12px;
+            margin-bottom: 5px;
+            color: #e0e0e0;
+            font-weight: 500;
+        }
+        .score-bar-track {
+            height: 24px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+        }
+        .score-bar-fill {
+            height: 100%;
+            border-radius: 12px;
+            position: relative;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>理想円と中心点の表示テスト</h1>
+        
+        <div class="instruction">
+            <p><strong>📝 操作方法:</strong></p>
+            <p>キャンバス上で円を描いてください。描画が完了すると、自動的に以下が表示されます：</p>
+            <ul>
+                <li>🔵 <strong>理想円</strong>（点線、半透明の青）- 計算された平均半径の円</li>
+                <li>🔴 <strong>中心点</strong>（十字マーカー、半透明の赤）- 計算された中心位置</li>
+                <li>📊 <strong>スコア内訳バーグラフ</strong> - 円形度、閉じ具合、滑らかさの評価</li>
+            </ul>
+        </div>
+        
+        <canvas id="gameCanvas" width="400" height="400"></canvas>
+        
+        <div class="info" id="result">
+            <p><strong>結果:</strong> 円を描いてテストを開始してください</p>
+        </div>
+        
+        <div class="score-breakdown" id="testScoreBreakdown" style="display: none;">
+            <div class="score-bar">
+                <div class="score-bar-label">円形度</div>
+                <div class="score-bar-track">
+                    <div class="score-bar-fill" id="testCircularityBar" style="width: 0%; background-color: #4285f4;"></div>
+                </div>
+            </div>
+            <div class="score-bar">
+                <div class="score-bar-label">閉じ具合</div>
+                <div class="score-bar-track">
+                    <div class="score-bar-fill" id="testClosureBar" style="width: 0%; background-color: #34a853;"></div>
+                </div>
+            </div>
+            <div class="score-bar">
+                <div class="score-bar-label">滑らかさ</div>
+                <div class="score-bar-track">
+                    <div class="score-bar-fill" id="testSmoothnessBar" style="width: 0%; background-color: #fbbc04;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript ファイル -->
+    <script src="js/DrawingEngine.js"></script>
+    <script src="js/ScoreCalculator.js"></script>
+    <script src="js/UIManager.js"></script>
+    <script src="js/GameController.js"></script>
+    
+    <script>
+        // ゲームコンポーネントの初期化
+        const canvas = document.getElementById('gameCanvas');
+        const drawingEngine = new DrawingEngine(canvas);
+        const scoreCalculator = new ScoreCalculator();
+        const uiManager = new UIManager();
+        const gameController = new GameController();
+        
+        // GameControllerの初期化
+        gameController.initialize(drawingEngine, scoreCalculator, uiManager);
+        
+        const resultDiv = document.getElementById('result');
+        
+        // 描画完了時のカスタムハンドラー
+        let originalOnDrawingComplete = drawingEngine.onDrawingComplete;
+        drawingEngine.onDrawingComplete = function(path) {
+            // 元のハンドラーを呼び出す（GameControllerの処理）
+            originalOnDrawingComplete.call(this, path);
+            
+            // テスト結果を表示
+            const scoreData = scoreCalculator.calculateCompleteScore(path);
+            const { center, radius } = scoreData.idealCircle;
+            const { circularity, closure, smoothness } = scoreData.breakdown;
+            
+            resultDiv.innerHTML = `
+                <p class="success"><strong>✓ 描画完了！</strong></p>
+                <p><strong>品質スコア:</strong> ${scoreData.qualityScore.toFixed(3)}点</p>
+                <p><strong>中心点:</strong> (${Math.round(center.x)}, ${Math.round(center.y)})</p>
+                <p><strong>平均半径:</strong> ${Math.round(radius)}px</p>
+                <hr>
+                <p><strong>スコア内訳:</strong></p>
+                <ul>
+                    <li>円形度: ${circularity.toFixed(4)}</li>
+                    <li>閉じ具合: ${closure.toFixed(4)}</li>
+                    <li>滑らかさ: ${smoothness.toFixed(4)}</li>
+                </ul>
+                <hr>
+                <p><strong>視覚的フィードバック:</strong></p>
+                <ul>
+                    <li>🔵 青い点線の円が理想円です</li>
+                    <li>🔴 赤い十字マーカーが中心点です</li>
+                    <li>📊 下のバーグラフで各評価要素を確認できます</li>
+                </ul>
+                <p style="margin-top: 15px; font-size: 14px; color: #a0a0a0;">
+                    キャンバスをクリックして次の円を描けます
+                </p>
+            `;
+            
+            // スコア内訳バーグラフを表示
+            const breakdownDiv = document.getElementById('testScoreBreakdown');
+            breakdownDiv.style.display = 'block';
+            
+            // バーを設定
+            const circularityBar = document.getElementById('testCircularityBar');
+            const closureBar = document.getElementById('testClosureBar');
+            const smoothnessBar = document.getElementById('testSmoothnessBar');
+            
+            circularityBar.style.width = `${Math.min(100, Math.max(0, circularity))}%`;
+            closureBar.style.width = `${Math.min(100, Math.max(0, closure))}%`;
+            smoothnessBar.style.width = `${Math.min(100, Math.max(0, smoothness))}%`;
+        };
+        
+        // キャンバスクリック時に次の円の準備
+        canvas.addEventListener('click', function(e) {
+            if (!drawingEngine.isDrawing) {
+                gameController.prepareNextCircle();
+                resultDiv.innerHTML = '<p><strong>結果:</strong> 円を描いてテストを開始してください</p>';
+                document.getElementById('testScoreBreakdown').style.display = 'none';
+            }
+        });
+        
+        console.log('テスト環境が初期化されました');
+        console.log('円を描いて、視覚的フィードバック機能（理想円、中心点、スコア内訳バーグラフ）をテストしてください');
+    </script>
+</body>
+</html>

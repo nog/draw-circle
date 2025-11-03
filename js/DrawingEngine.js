@@ -2,8 +2,6 @@
  * DrawingEngine - Canvas描画エンジン
  * タッチ入力の処理と描画パスの管理を行います
  */
-console.log('DrawingEngine.js が読み込まれました');
-
 class DrawingEngine {
     constructor(canvas) {
         this.canvas = canvas;
@@ -26,8 +24,6 @@ class DrawingEngine {
         
         // イベントリスナーの設定
         this.setupEventListeners();
-        
-        console.log('DrawingEngine が初期化されました');
     }
     
     /**
@@ -63,8 +59,6 @@ class DrawingEngine {
                 globalAlpha: 0.7
             }
         };
-        
-        console.log('描画設定を初期化しました');
     }
     
     /**
@@ -92,8 +86,6 @@ class DrawingEngine {
                 passive: false, 
                 capture: true 
             });
-            
-            console.log('タッチイベントリスナーを設定しました');
         }
         
         // マウスイベント（デスクトップフォールバック）
@@ -110,8 +102,6 @@ class DrawingEngine {
         // ページスクロール防止（ゲームエリア全体）
         document.body.addEventListener('touchstart', this.preventScroll.bind(this), { passive: false });
         document.body.addEventListener('touchmove', this.preventScroll.bind(this), { passive: false });
-        
-        console.log('イベントリスナーを設定しました');
     }
     
     /**
@@ -144,8 +134,6 @@ class DrawingEngine {
         this.ctx.beginPath();
         this.ctx.arc(x, y, 2, 0, 2 * Math.PI);
         this.ctx.fill();
-        
-        console.log(`描画開始: (${x}, ${y}) at ${timestamp}`);
     }
     
     /**
@@ -281,9 +269,6 @@ class DrawingEngine {
         this.applyDrawingStyle('completed');
         this.drawPath(this.currentPath);
         
-        console.log(`描画終了: ${timestamp}, 描画時間: ${timestamp - this.drawingStartTime}ms`);
-        console.log(`点数: ${this.currentPath.points.length}`);
-        
         // 描画完了イベントを発火（コピーを渡す）
         this.onDrawingComplete(completedPath);
     }
@@ -307,7 +292,6 @@ class DrawingEngine {
         
         // 一ストローク毎のリセットモードでは常に履歴をクリア
         this.pathHistory = [];
-        console.log('Canvasをクリアしました（次の円の準備完了）');
     }
     
     /**
@@ -317,7 +301,6 @@ class DrawingEngine {
         if (this.pathHistory.length > 0) {
             this.pathHistory.pop();
             this.clearCanvas(false); // 履歴は保持してCanvasのみクリア
-            console.log('最後のパスを取り消しました');
             return true;
         }
         return false;
@@ -350,7 +333,6 @@ class DrawingEngine {
      */
     onDrawingComplete(path) {
         // サブクラスまたは外部でオーバーライドして使用
-        console.log('描画が完了しました:', path);
     }
     
     /**
@@ -383,7 +365,6 @@ class DrawingEngine {
     isValidTouch(event) {
         // 複数の指でのタッチを無効化
         if (event.touches && event.touches.length > 1) {
-            console.log('マルチタッチが検出されました - 無効化');
             return false;
         }
         return true;
@@ -513,6 +494,7 @@ class DrawingEngine {
         }
     }
     
+
     /**
      * リソースのクリーンアップ
      */
@@ -543,7 +525,5 @@ class DrawingEngine {
         // 描画状態のリセット
         this.isDrawing = false;
         this.currentPath = null;
-        
-        console.log('DrawingEngine のリソースをクリーンアップしました');
     }
 }

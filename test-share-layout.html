@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>シェア画像レイアウトテスト</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background: #1a1a2e;
+            color: white;
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        h1 {
+            color: #00d4ff;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        button {
+            padding: 12px 24px;
+            font-size: 16px;
+            background: #00d4ff;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        button:hover {
+            background: #00a8cc;
+        }
+        
+        #testCanvas {
+            border: 2px solid #00d4ff;
+            border-radius: 10px;
+            max-width: 100%;
+            height: auto;
+        }
+        
+        .info {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 8px;
+            max-width: 600px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <h1>シェア画像レイアウトテスト</h1>
+    
+    <div class="info">
+        <p>このページでは、シェア画像のレイアウトを確認できます。</p>
+        <p>1080x1080サイズで、円、スコア、10段階評価がバランスよく配置されています。</p>
+    </div>
+    
+    <div class="controls">
+        <button onclick="generateTestImage('high')">高スコア画像を生成</button>
+        <button onclick="generateTestImage('medium')">中スコア画像を生成</button>
+        <button onclick="generateTestImage('low')">低スコア画像を生成</button>
+        <button onclick="downloadImage()">画像をダウンロード</button>
+    </div>
+    
+    <canvas id="testCanvas"></canvas>
+    
+    <script src="js/UIManager.js"></script>
+    <script>
+        const canvas = document.getElementById('testCanvas');
+        const ctx = canvas.getContext('2d');
+        const uiManager = new UIManager();
+        
+        // テスト用の円データを生成
+        function generateCircleData(quality) {
+            const points = [];
+            const centerX = 200;
+            const centerY = 200;
+            const radius = 150;
+            const numPoints = 100;
+            
+            // 品質に応じてノイズを追加
+            const noiseLevel = quality === 'high' ? 2 : quality === 'medium' ? 10 : 25;
+            
+            for (let i = 0; i <= numPoints; i++) {
+                const angle = (i / numPoints) * Math.PI * 2;
+                const noise = (Math.random() - 0.5) * noiseLevel;
+                const x = centerX + (radius + noise) * Math.cos(angle);
+                const y = centerY + (radius + noise) * Math.sin(angle);
+                points.push({ x, y });
+            }
+            
+            return { points };
+        }
+        
+        // テスト用のスコアデータを生成
+        function generateScoreData(quality) {
+            let qualityScore, circularity, closure, smoothness;
+            
+            if (quality === 'high') {
+                qualityScore = 95.234;
+                circularity = 96.5432;
+                closure = 98.1234;
+                smoothness = 89.7654;
+            } else if (quality === 'medium') {
+                qualityScore = 75.678;
+                circularity = 78.2345;
+                closure = 72.4567;
+                smoothness = 76.8901;
+            } else {
+                qualityScore = 45.123;
+                circularity = 48.9876;
+                closure = 42.3456;
+                smoothness = 44.5678;
+            }
+            
+            return {
+                qualityScore,
+                totalScore: Math.round(qualityScore),
+                breakdown: {
+                    circularity,
+                    closure,
+                    smoothness
+                },
+                idealCircle: {
+                    center: { x: 200, y: 200 },
+                    radius: 150
+                }
+            };
+        }
+        
+        // テスト画像を生成
+        function generateTestImage(quality) {
+            canvas.width = 1080;
+            canvas.height = 1080;
+            
+            const circleData = generateCircleData(quality);
+            const scoreData = generateScoreData(quality);
+            
+            // 背景を描画
+            uiManager.drawScreenshotBackground(ctx, canvas.width, canvas.height);
+            
+            // タイトルを描画
+            uiManager.drawScreenshotTitle(ctx, canvas.width);
+            
+            // 円を描画（理想円と中心点を含む）
+            uiManager.drawScreenshotCircle(ctx, circleData, scoreData.idealCircle, canvas.width, canvas.height);
+            
+            // スコア情報を描画（10段階評価を含む）
+            uiManager.drawScreenshotScore(ctx, scoreData, canvas.width, canvas.height);
+        }
+        
+        // 画像をダウンロード
+        function downloadImage() {
+            canvas.toBlob((blob) => {
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = 'share-layout-test.png';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+            }, 'image/png');
+        }
+        
+        // 初期画像を生成
+        generateTestImage('high');
+    </script>
+</body>
+</html>

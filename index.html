@@ -1,22 +1,24 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0, minimum-scale=1.0">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0, minimum-scale=1.0">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="format-detection" content="telephone=no">
-    
+
     <!-- 一般的なメタタグ -->
     <meta name="description" content="スマートフォンで楽しむ円描画ゲーム。大きくて綺麗な円を素早く描いて高得点を目指そう！">
     <meta name="keywords" content="円描画,ゲーム,スマートフォン,スキルゲーム,無料ゲーム">
     <meta name="author" content="円を描け！">
-    
+
     <title>円を描け！</title>
-    
+
     <!-- 正規URL -->
     <link rel="canonical" href="https://circle-drawing.nog.cc/">
-    
+
     <!-- OGP (Open Graph Protocol) メタタグ -->
     <meta property="og:title" content="円を描け！ - 完璧な円を目指すスキルゲーム">
     <meta property="og:description" content="スマートフォンで楽しむ円描画ゲーム。大きくて綺麗な円を素早く描いて高得点を目指そう！">
@@ -28,32 +30,33 @@
     <meta property="og:image:alt" content="円を描け！ゲーム画面">
     <meta property="og:site_name" content="円を描け！">
     <meta property="og:locale" content="ja_JP">
-    
+
     <!-- Twitter Card メタタグ -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="円を描け！ - 完璧な円を目指すスキルゲーム">
     <meta name="twitter:description" content="スマートフォンで楽しむ円描画ゲーム。大きくて綺麗な円を素早く描いて高得点を目指そう！">
     <meta name="twitter:image" content="https://circle-drawing.nog.cc/images/ogp-image.png">
     <meta name="twitter:image:alt" content="円を描け！ゲーム画面">
-    
+
     <!-- PWA マニフェスト -->
     <link rel="manifest" href="manifest.json">
-    
+
     <!-- Apple Touch Icon -->
     <link rel="apple-touch-icon" href="icons/icon-180.svg">
     <link rel="apple-touch-icon" sizes="180x180" href="icons/icon-180.svg">
-    
+
     <!-- 標準的なファビコン -->
     <link rel="icon" type="image/svg+xml" href="icons/icon-192.svg">
     <link rel="icon" type="image/svg+xml" sizes="192x192" href="icons/icon-192.svg">
     <link rel="icon" type="image/svg+xml" sizes="512x512" href="icons/icon-512.svg">
-    
+
     <!-- PWA用メタタグ -->
     <meta name="theme-color" content="#1a1a2e">
     <meta name="apple-mobile-web-app-title" content="円描画ゲーム">
-    
+
     <link rel="stylesheet" href="styles.css">
 </head>
+
 <body>
     <div class="game-container">
         <!-- メインゲームエリア -->
@@ -63,38 +66,51 @@
                 <h1>円を描け！</h1>
                 <p class="game-subtitle">完璧な円を目指そう</p>
             </div>
-            
+
             <canvas id="gameCanvas" class="drawing-canvas"></canvas>
-            
+
             <!-- 結果表示モーダル -->
             <div class="result-modal" id="resultModal">
                 <div class="result-content">
                     <!-- 結果画面タイトル -->
                     <div class="result-title">
                         <h2>円を描け！</h2>
-                        <p>あなたの結果</p>
                     </div>
-                    
+
                     <!-- 描いた円のプレビュー -->
                     <div class="circle-preview">
                         <canvas id="previewCanvas" class="preview-canvas"></canvas>
                     </div>
-                    
+
                     <!-- スコア表示 -->
                     <div class="score-section">
                         <div class="main-score">
                             <span class="score-value" id="mainScore">0</span>
                             <span class="score-label">点</span>
                         </div>
-                        
 
-                        
+                        <!-- スコア内訳（10段階評価） -->
+                        <div class="score-breakdown-compact" id="scoreBreakdown">
+                            <div class="score-item-compact">
+                                <span class="score-item-label">円形度</span>
+                                <span class="score-item-value" id="circularityScore">0</span>
+                            </div>
+                            <div class="score-item-compact">
+                                <span class="score-item-label">閉じ具合</span>
+                                <span class="score-item-value" id="closureScore">0</span>
+                            </div>
+                            <div class="score-item-compact">
+                                <span class="score-item-label">滑らかさ</span>
+                                <span class="score-item-value" id="smoothnessScore">0</span>
+                            </div>
+                        </div>
+
                         <!-- 評価メッセージ -->
                         <div class="evaluation-message" id="evaluationMessage">
                             素晴らしい円です！
                         </div>
                     </div>
-                    
+
                     <!-- アクションボタン -->
                     <div class="action-buttons">
                         <button class="share-direct-button" id="shareDirectButton">📱 シェア</button>
@@ -105,36 +121,37 @@
         </main>
     </div>
 
-    <!-- JavaScript ファイル -->
-    <script src="js/DrawingEngine.js" onerror="console.error('DrawingEngine.js の読み込みに失敗しました')"></script>
-    <script src="js/ScoreCalculator.js" onerror="console.error('ScoreCalculator.js の読み込みに失敗しました')"></script>
-    <script src="js/UIManager.js" onerror="console.error('UIManager.js の読み込みに失敗しました')"></script>
-    <script src="js/GameController.js" onerror="console.error('GameController.js の読み込みに失敗しました')"></script>
-    <script src="js/main.js" onerror="console.error('main.js の読み込みに失敗しました')"></script>
-    
+    <!-- JavaScript ファイル（キャッシュバスティング用バージョンパラメータ付き） -->
+    <script src="js/DrawingEngine.js?v=1.1.0" onerror="console.error('DrawingEngine.js の読み込みに失敗しました')"></script>
+    <script src="js/ScoreCalculator.js?v=1.1.0" onerror="console.error('ScoreCalculator.js の読み込みに失敗しました')"></script>
+    <script src="js/UIManager.js?v=1.1.0" onerror="console.error('UIManager.js の読み込みに失敗しました')"></script>
+    <script src="js/GameController.js?v=1.1.0" onerror="console.error('GameController.js の読み込みに失敗しました')"></script>
+    <script src="js/main.js?v=1.1.0" onerror="console.error('main.js の読み込みに失敗しました')"></script>
+
     <!-- エラーハンドリング -->
     <script>
-        window.addEventListener('error', function(e) {
+        window.addEventListener('error', function (e) {
             console.error('グローバルエラー:', e.error);
             console.error('ファイル:', e.filename);
             console.error('行:', e.lineno);
             console.error('列:', e.colno);
         });
-        
-        window.addEventListener('unhandledrejection', function(e) {
+
+        window.addEventListener('unhandledrejection', function (e) {
             console.error('未処理のPromise拒否:', e.reason);
         });
-        
+
         // ファイル読み込み完了の確認
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             console.log('DOM読み込み完了');
             console.log('現在のURL:', window.location.href);
             console.log('プロトコル:', window.location.protocol);
-            
+
             if (window.location.protocol === 'file:') {
                 console.warn('ファイルプロトコルで開かれています。HTTPサーバーでの実行を推奨します。');
             }
         });
     </script>
 </body>
+
 </html>

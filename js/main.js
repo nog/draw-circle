@@ -2,7 +2,6 @@
  * 円描画ゲーム - メインエントリーポイント
  * モバイルブラウザでの円描画ゲームを初期化し、実行します
  */
-console.log('main.js が読み込まれました');
 
 // グローバル変数
 let gameController = null;
@@ -12,15 +11,6 @@ let uiManager = null;
 
 // DOMが読み込まれた後にゲームを初期化
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('「円を描け！」を初期化中...');
-    console.log('現在時刻:', new Date().toISOString());
-    
-    // DOM要素の存在確認
-    console.log('DOM要素確認:');
-    console.log('gameCanvas:', document.getElementById('gameCanvas'));
-    console.log('resultModal:', document.getElementById('resultModal'));
-    console.log('previewCanvas:', document.getElementById('previewCanvas'));
-    
     // Canvas要素の取得
     const canvas = document.getElementById('gameCanvas');
     if (!canvas) {
@@ -40,13 +30,6 @@ document.addEventListener('DOMContentLoaded', function() {
     // Canvasサイズの設定
     resizeCanvas();
     
-    // クラスの存在確認
-    console.log('クラス存在確認:');
-    console.log('DrawingEngine:', typeof DrawingEngine);
-    console.log('ScoreCalculator:', typeof ScoreCalculator);
-    console.log('UIManager:', typeof UIManager);
-    console.log('GameController:', typeof GameController);
-    
     // 各コンポーネントの初期化
     try {
         // DrawingEngineの初期化
@@ -54,21 +37,18 @@ document.addEventListener('DOMContentLoaded', function() {
             throw new Error('DrawingEngineクラスが見つかりません');
         }
         drawingEngine = new DrawingEngine(canvas);
-        console.log('DrawingEngine が正常に初期化されました');
         
         // ScoreCalculatorの初期化
         if (typeof ScoreCalculator === 'undefined') {
             throw new Error('ScoreCalculatorクラスが見つかりません');
         }
         scoreCalculator = new ScoreCalculator();
-        console.log('ScoreCalculator が正常に初期化されました');
         
         // UIManagerの初期化
         if (typeof UIManager === 'undefined') {
             throw new Error('UIManagerクラスが見つかりません');
         }
         uiManager = new UIManager();
-        console.log('UIManager が正常に初期化されました');
         
         // GameControllerの初期化と統合
         if (typeof GameController === 'undefined') {
@@ -76,7 +56,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         gameController = new GameController();
         gameController.initialize(drawingEngine, scoreCalculator, uiManager);
-        console.log('GameController が正常に初期化されました');
         
         // グローバル参照を設定（UIManagerから参照するため）
         window.gameController = gameController;
@@ -103,8 +82,6 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // ゲームイベントリスナーの設定
     setupGameEventListeners();
-    
-    console.log('「円を描け！」の初期化が完了しました');
 });
 
 /**
@@ -134,8 +111,6 @@ function resizeCanvas() {
     // CSS でのサイズも設定
     canvas.style.width = size + 'px';
     canvas.style.height = size + 'px';
-    
-    console.log(`Canvas サイズを調整: ${size}x${size}px`);
 }
 
 /**
@@ -171,8 +146,6 @@ function setupGameEventListeners() {
     
     // スコア更新時のイベント
     gameController.addEventListener('scoreUpdated', function(data) {
-        console.log('スコアが更新されました:', data);
-        
         // スコア表示にパルスエフェクトを追加
         const totalScoreElement = document.getElementById('totalScore');
         if (totalScoreElement) {
@@ -182,21 +155,6 @@ function setupGameEventListeners() {
             }, 600);
         }
     });
-    
-    // ゲーム開始時のイベント
-    gameController.addEventListener('gameStarted', function(gameState) {
-        console.log('ゲームが開始されました:', gameState);
-    });
-    
-    // ゲーム終了時のイベント
-    gameController.addEventListener('gameEnded', function(gameState) {
-        console.log('ゲームが終了しました:', gameState);
-    });
-    
-    // ゲームリセット時のイベント
-    gameController.addEventListener('gameReset', function(gameState) {
-        console.log('ゲームがリセットされました:', gameState);
-    });
 }
 
 /**
@@ -204,7 +162,6 @@ function setupGameEventListeners() {
  */
 function updateUI() {
     // 新しいUIでは不要
-    console.log('UI更新（新しいUIでは自動処理）');
 }
 
 /**

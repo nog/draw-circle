@@ -2,8 +2,6 @@
  * ScoreCalculator - スコア計算エンジン
  * 円の品質、スピード、サイズを評価してスコアを計算します
  */
-console.log('ScoreCalculator.js が読み込まれました');
-
 class ScoreCalculator {
     constructor() {
         // スコア計算の設定値
@@ -16,8 +14,6 @@ class ScoreCalculator {
                 smoothnessWeight: 0.15     // 滑らかさの重み
             }
         };
-
-        console.log('ScoreCalculator が初期化されました');
     }
 
     /**
@@ -53,28 +49,111 @@ class ScoreCalculator {
         // 小数点以下3桁で丸める
         const finalScore = Math.round(clampedScore * 1000) / 1000;
 
-        console.log(`品質スコア計算: 円形度=${circularity.toFixed(4)}, 閉じ具合=${closure.toFixed(4)}, 滑らかさ=${smoothness.toFixed(4)}, 最終=${finalScore.toFixed(3)}`);
-
         return finalScore;
     }
 
     /**
-     * 円の中心座標を計算
+     * 円の中心座標を計算（Taubin法による最小二乗円フィッティング）
+     * 描画スピードや点密度の影響を受けない幾何学的に正確な中心を計算
      * @param {Array} points - 描画点の配列
      * @returns {Object} 中心座標 {x, y}
      */
     calculateCenter(points) {
-        let sumX = 0;
-        let sumY = 0;
-
-        for (const point of points) {
-            sumX += point.x;
-            sumY += point.y;
+        const n = points.length;
+        
+        // 点数が少ない場合は単純な平均を使用
+        if (n < 3) {
+            let sumX = 0;
+            let sumY = 0;
+            for (const point of points) {
+                sumX += point.x;
+                sumY += point.y;
+            }
+            return {
+                x: sumX / n,
+                y: sumY / n
+            };
         }
 
+        // 重心を計算
+        let meanX = 0;
+        let meanY = 0;
+        for (const point of points) {
+            meanX += point.x;
+            meanY += point.y;
+        }
+        meanX /= n;
+        meanY /= n;
+
+        // 重心を原点とした座標系に変換
+        const centeredPoints = points.map(p => ({
+            x: p.x - meanX,
+            y: p.y - meanY
+        }));
+
+        // モーメントを計算
+        let Mxx = 0, Myy = 0, Mxy = 0, Mxz = 0, Myz = 0, Mzz = 0;
+        
+        for (const p of centeredPoints) {
+            const zi = p.x * p.x + p.y * p.y;
+            Mxx += p.x * p.x;
+            Myy += p.y * p.y;
+            Mxy += p.x * p.y;
+            Mxz += p.x * zi;
+            Myz += p.y * zi;
+            Mzz += zi * zi;
+        }
+        
+        Mxx /= n;
+        Myy /= n;
+        Mxy /= n;
+        Mxz /= n;
+        Myz /= n;
+        Mzz /= n;
+
+        // 共分散行列を構築
+        const Mz = Mxx + Myy;
+        const Cov_xy = Mxx * Myy - Mxy * Mxy;
+        const Var_z = Mzz - Mz * Mz;
+        
+        const A2 = 4 * Cov_xy - 3 * Mz * Mz - Mzz;
+        const A1 = Var_z * Mz + 4 * Cov_xy * Mz - Mxz * Mxz - Myz * Myz;
+        const A0 = Mxz * (Mxz * Myy - Myz * Mxy) + Myz * (Myz * Mxx - Mxz * Mxy) - Var_z * Cov_xy;
+        const A22 = A2 + A2;
+
+        // ニュートン法で固有値を求める
+        let Y = A0;
+        let X = 0;
+        
+        // 最大20回の反復
+        for (let iter = 0; iter < 20; iter++) {
+            const Dy = A1 + X * (A22 + 16 * X * X);
+            const xnew = X - Y / Dy;
+            const ynew = A0 + xnew * (A1 + xnew * (A2 + 4 * xnew * xnew));
+            
+            if (Math.abs(ynew) > Math.abs(Y)) {
+                break;
+            }
+            
+            const dx = xnew - X;
+            X = xnew;
+            Y = ynew;
+            
+            // 収束判定
+            if (Math.abs(dx) < 1e-12) {
+                break;
+            }
+        }
+
+        // 中心座標を計算
+        const det = X * X - X * Mz + Cov_xy;
+        const centerX = (Mxz * (Myy - X) - Myz * Mxy) / det / 2;
+        const centerY = (Myz * (Mxx - X) - Mxz * Mxy) / det / 2;
+
+        // 元の座標系に戻す
         return {
-            x: sumX / points.length,
-            y: sumY / points.length
+            x: centerX + meanX,
+            y: centerY + meanY
         };
     }
 
@@ -250,8 +329,6 @@ class ScoreCalculator {
         // 品質スコアがそのまま最終スコア
         const finalScore = Math.round(qualityScore);
 
-        console.log(`スコア計算: 品質=${qualityScore} = 最終スコア=${finalScore}`);
-
         return finalScore;
     }
 
@@ -261,22 +338,68 @@ class ScoreCalculator {
      * @returns {Object} 完全なスコアデータ
      */
     calculateCompleteScore(path) {
-        // 品質スコアを計算
-        const qualityScore = this.calculateCircleQuality(path);
+        if (!path || !path.points || path.points.length < 3) {
+            return {
+                qualityScore: 0,
+                totalScore: 0,
+                timestamp: Date.now(),
+                pathId: path?.id || null,
+                pointCount: 0,
+                breakdown: {
+                    circularity: 0,
+                    closure: 0,
+                    smoothness: 0
+                },
+                idealCircle: {
+                    center: { x: 0, y: 0 },
+                    radius: 0
+                }
+            };
+        }
+
+        const points = path.points;
+
+        // 円の中心と半径を計算
+        const center = this.calculateCenter(points);
+        const avgRadius = this.calculateAverageRadius(points, center);
+
+        // 各品質要素を計算
+        const circularity = this.calculateCircularity(points, center, avgRadius);
+        const closure = this.calculateClosure(points);
+        const smoothness = this.calculateSmoothness(points);
+
+        // 重み付き合計で最終品質スコアを計算
+        const qualityScore =
+            circularity * this.config.quality.circularityWeight +
+            closure * this.config.quality.closureWeight +
+            smoothness * this.config.quality.smoothnessWeight;
+
+        // 0-100の範囲にクランプ
+        const clampedScore = Math.max(0, Math.min(100, qualityScore));
+
+        // 小数点以下3桁で丸める
+        const finalQualityScore = Math.round(clampedScore * 1000) / 1000;
 
         // 最終スコアを計算
-        const totalScore = this.calculateTotalScore(qualityScore);
+        const totalScore = this.calculateTotalScore(finalQualityScore);
 
-        // スコアデータ構造を作成
+        // スコアデータ構造を作成（breakdownとidealCircle情報を含む）
         const scoreData = {
-            qualityScore,
+            qualityScore: finalQualityScore,
             totalScore,
             timestamp: Date.now(),
             pathId: path.id || null,
-            pointCount: path.points ? path.points.length : 0
+            pointCount: points.length,
+            breakdown: {
+                circularity,
+                closure,
+                smoothness
+            },
+            idealCircle: {
+                center,
+                radius: avgRadius
+            }
         };
-
-        console.log('スコア計算結果:', scoreData);
 
         return scoreData;
     }
