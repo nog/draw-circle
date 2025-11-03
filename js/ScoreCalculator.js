@@ -10,7 +10,7 @@ class ScoreCalculator {
             quality: {
                 maxScore: 100,
                 circularityWeight: 0.5,    // 円形度の重み
-                closureWeight: 0.35,       // 閉じ具合の重み
+                closureWeight: 0.35,       // 始点終点距離の重み
                 smoothnessWeight: 0.15     // 滑らかさの重み
             }
         };
@@ -60,7 +60,7 @@ class ScoreCalculator {
      */
     calculateCenter(points) {
         const n = points.length;
-        
+
         // 点数が少ない場合は単純な平均を使用
         if (n < 3) {
             let sumX = 0;
@@ -93,7 +93,7 @@ class ScoreCalculator {
 
         // モーメントを計算
         let Mxx = 0, Myy = 0, Mxy = 0, Mxz = 0, Myz = 0, Mzz = 0;
-        
+
         for (const p of centeredPoints) {
             const zi = p.x * p.x + p.y * p.y;
             Mxx += p.x * p.x;
@@ -103,7 +103,7 @@ class ScoreCalculator {
             Myz += p.y * zi;
             Mzz += zi * zi;
         }
-        
+
         Mxx /= n;
         Myy /= n;
         Mxy /= n;
@@ -115,7 +115,7 @@ class ScoreCalculator {
         const Mz = Mxx + Myy;
         const Cov_xy = Mxx * Myy - Mxy * Mxy;
         const Var_z = Mzz - Mz * Mz;
-        
+
         const A2 = 4 * Cov_xy - 3 * Mz * Mz - Mzz;
         const A1 = Var_z * Mz + 4 * Cov_xy * Mz - Mxz * Mxz - Myz * Myz;
         const A0 = Mxz * (Mxz * Myy - Myz * Mxy) + Myz * (Myz * Mxx - Mxz * Mxy) - Var_z * Cov_xy;
@@ -124,21 +124,21 @@ class ScoreCalculator {
         // ニュートン法で固有値を求める
         let Y = A0;
         let X = 0;
-        
+
         // 最大20回の反復
         for (let iter = 0; iter < 20; iter++) {
             const Dy = A1 + X * (A22 + 16 * X * X);
             const xnew = X - Y / Dy;
             const ynew = A0 + xnew * (A1 + xnew * (A2 + 4 * xnew * xnew));
-            
+
             if (Math.abs(ynew) > Math.abs(Y)) {
                 break;
             }
-            
+
             const dx = xnew - X;
             X = xnew;
             Y = ynew;
-            
+
             // 収束判定
             if (Math.abs(dx) < 1e-12) {
                 break;
@@ -212,9 +212,9 @@ class ScoreCalculator {
     }
 
     /**
-     * 閉じ具合を計算（開始点と終了点の距離）
+     * 始点終点距離を計算（開始点と終了点の距離）
      * @param {Array} points - 描画点の配列
-     * @returns {number} 閉じ具合スコア（0-100）
+     * @returns {number} 始点終点距離スコア（0-100）
      */
     calculateClosure(points) {
         if (points.length < 2) return 0;
@@ -240,7 +240,7 @@ class ScoreCalculator {
         // 距離比率（直径に対する開始終了点距離の割合）
         const distanceRatio = distance / estimatedDiameter;
 
-        // 閉じ具合スコア（距離が小さいほど高スコア）
+        // 始点終点距離スコア（距離が小さいほど高スコア）
         const closureScore = Math.max(0, 100 - (distanceRatio * 300));
 
         // 小数点以下4桁で丸める

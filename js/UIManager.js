@@ -665,7 +665,7 @@ class UIManager {
         // 各評価項目を描画
         const items = [
             { label: '円形度', value: circularityValue, x: itemWidth * 0.5 },
-            { label: '始点終点', value: closureValue, x: itemWidth * 1.5 },
+            { label: '始点終点距離', value: closureValue, x: itemWidth * 1.5 },
             { label: '滑らかさ', value: smoothnessValue, x: itemWidth * 2.5 }
         ];
 

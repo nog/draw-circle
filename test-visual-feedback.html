@@ -88,7 +88,7 @@
             <ul>
                 <li>🔵 <strong>理想円</strong>（点線、半透明の青）- 計算された平均半径の円</li>
                 <li>🔴 <strong>中心点</strong>（十字マーカー、半透明の赤）- 計算された中心位置</li>
-                <li>📊 <strong>スコア内訳バーグラフ</strong> - 円形度、閉じ具合、滑らかさの評価</li>
+                <li>📊 <strong>スコア内訳バーグラフ</strong> - 円形度、始点終点距離、滑らかさの評価</li>
             </ul>
         </div>
         
@@ -106,7 +106,7 @@
                 </div>
             </div>
             <div class="score-bar">
-                <div class="score-bar-label">閉じ具合</div>
+                <div class="score-bar-label">始点終点距離</div>
                 <div class="score-bar-track">
                     <div class="score-bar-fill" id="testClosureBar" style="width: 0%; background-color: #34a853;"></div>
                 </div>
@@ -159,7 +159,7 @@
                 <p><strong>スコア内訳:</strong></p>
                 <ul>
                     <li>円形度: ${circularity.toFixed(4)}</li>
-                    <li>閉じ具合: ${closure.toFixed(4)}</li>
+                    <li>始点終点距離: ${closure.toFixed(4)}</li>
                     <li>滑らかさ: ${smoothness.toFixed(4)}</li>
                 </ul>
                 <hr>
