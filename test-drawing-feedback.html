@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>理想円と中心点の描画テスト</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background: #1a1a2e;
+            color: white;
+            font-family: Arial, sans-serif;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: #00d4ff;
+        }
+
+        canvas {
+            display: block;
+            margin: 20px auto;
+            background: #16213e;
+            border: 2px solid #00d4ff;
+            border-radius: 10px;
+        }
+
+        .controls {
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            background: #00d4ff;
+            color: #1a1a2e;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background: #00a8cc;
+        }
+
+        .info {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+
+        .success {
+            color: #00ff88;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>理想円と中心点の描画テスト</h1>
+
+        <div class="info">
+            <p><strong>テスト内容:</strong></p>
+            <ul>
+                <li>✓ drawIdealCircle() - 点線スタイルで理想円を描画（半透明の青）</li>
+                <li>✓ drawCenterPoint() - 中心点を十字マーカーで描画（半透明の赤）</li>
+            </ul>
+        </div>
+
+        <canvas id="testCanvas" width="400" height="400"></canvas>
+
+        <div class="controls">
+            <button onclick="testIdealCircle()">理想円を描画</button>
+            <button onclick="testCenterPoint()">中心点を描画</button>
+            <button onclick="testBoth()">両方を描画</button>
+            <button onclick="clearCanvas()">クリア</button>
+        </div>
+
+        <div class="info" id="result">
+            <p><strong>結果:</strong> ボタンをクリックしてテストを開始してください</p>
+        </div>
+    </div>
+
+    <script src="js/DrawingEngine.js"></script>
+    <script>
+        const canvas = document.getElementById('testCanvas');
+        const drawingEngine = new DrawingEngine(canvas);
+        const resultDiv = document.getElementById('result');
+
+        function showResult(message, isSuccess = true) {
+            resultDiv.innerHTML = `<p class="${isSuccess ? 'success' : ''}"><strong>結果:</strong> ${message}</p>`;
+        }
+
+        function testIdealCircle() {
+            try {
+                // キャンバスの中心に理想円を描画
+                const center = { x: 200, y: 200 };
+                const radius = 100;
+
+                drawingEngine.drawIdealCircle(center, radius);
+                showResult('✓ 理想円の描画に成功しました！（半透明の青、点線スタイル）');
+            } catch (error) {
+                showResult('✗ エラー: ' + error.message, false);
+            }
+        }
+
+        function testCenterPoint() {
+            try {
+                // キャンバスの中心に中心点を描画
+                const center = { x: 200, y: 200 };
+
+                drawingEngine.drawCenterPoint(center);
+                showResult('✓ 中心点の描画に成功しました！（半透明の赤、十字マーカー）');
+            } catch (error) {
+                showResult('✗ エラー: ' + error.message, false);
+            }
+        }
+
+        function testBoth() {
+            try {
+                // キャンバスの中心に両方を描画
+                const center = { x: 200, y: 200 };
+                const radius = 100;
+
+                drawingEngine.drawIdealCircle(center, radius);
+                drawingEngine.drawCenterPoint(center);
+                showResult('✓ 理想円と中心点の両方の描画に成功しました！');
+            } catch (error) {
+                showResult('✗ エラー: ' + error.message, false);
+            }
+        }
+
+        function clearCanvas() {
+            drawingEngine.clearCanvas(true);
+            showResult('キャンバスをクリアしました');
+        }
+
+        // 初期表示
+        showResult('準備完了。ボタンをクリックしてテストを開始してください');
+    </script>
+</body>
+
+</html>

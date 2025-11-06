@@ -10,7 +10,7 @@ let scoreCalculator = null;
 let uiManager = null;
 
 // DOMが読み込まれた後にゲームを初期化
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     // Canvas要素の取得
     const canvas = document.getElementById('gameCanvas');
     if (!canvas) {
@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', function() {
         showError('Canvasエレメントが見つかりません');
         return;
     }
-    
+
     // Canvas APIサポートの確認
     const ctx = canvas.getContext('2d');
     if (!ctx) {
@@ -26,10 +26,10 @@ document.addEventListener('DOMContentLoaded', function() {
         showError('お使いのブラウザはこのゲームをサポートしていません');
         return;
     }
-    
+
     // Canvasサイズの設定
     resizeCanvas();
-    
+
     // 各コンポーネントの初期化
     try {
         // DrawingEngineの初期化
@@ -37,32 +37,32 @@ document.addEventListener('DOMContentLoaded', function() {
             throw new Error('DrawingEngineクラスが見つかりません');
         }
         drawingEngine = new DrawingEngine(canvas);
-        
+
         // ScoreCalculatorの初期化
         if (typeof ScoreCalculator === 'undefined') {
             throw new Error('ScoreCalculatorクラスが見つかりません');
         }
-        scoreCalculator = new ScoreCalculator();
-        
+        scoreCalculator = new ScoreCalculator(canvas);
+
         // UIManagerの初期化
         if (typeof UIManager === 'undefined') {
             throw new Error('UIManagerクラスが見つかりません');
         }
         uiManager = new UIManager();
-        
+
         // GameControllerの初期化と統合
         if (typeof GameController === 'undefined') {
             throw new Error('GameControllerクラスが見つかりません');
         }
         gameController = new GameController();
         gameController.initialize(drawingEngine, scoreCalculator, uiManager);
-        
+
         // グローバル参照を設定（UIManagerから参照するため）
         window.gameController = gameController;
-        
+
         // ゲーム開始
         gameController.startGame();
-        
+
     } catch (error) {
         console.error('ゲームコンポーネントの初期化に失敗しました:', error);
         console.error('エラー詳細:', error.message);
@@ -70,16 +70,16 @@ document.addEventListener('DOMContentLoaded', function() {
         showError(`ゲームの初期化に失敗しました: ${error.message}`);
         return;
     }
-    
+
     // ウィンドウリサイズ時の処理
     window.addEventListener('resize', handleResize);
-    window.addEventListener('orientationchange', function() {
+    window.addEventListener('orientationchange', function () {
         // デバイス向き変更時は少し遅延させてリサイズ
         setTimeout(handleResize, 100);
     });
-    
+
     // リセットボタンは削除されたため、この処理は不要
-    
+
     // ゲームイベントリスナーの設定
     setupGameEventListeners();
 });
@@ -90,24 +90,24 @@ document.addEventListener('DOMContentLoaded', function() {
 function resizeCanvas() {
     const canvas = document.getElementById('gameCanvas');
     const gameArea = document.querySelector('.game-area');
-    
+
     if (!canvas || !gameArea) return;
-    
+
     // コンテナのサイズを取得
     const containerRect = gameArea.getBoundingClientRect();
     const padding = 20; // パディングを考慮
-    
+
     // アスペクト比を維持しながらサイズを調整
     const maxWidth = containerRect.width - padding;
     const maxHeight = containerRect.height - padding;
-    
+
     // 正方形に近い形で最適なサイズを計算
     const size = Math.min(maxWidth, maxHeight);
-    
+
     // Canvas の実際のサイズを設定
     canvas.width = size;
     canvas.height = size;
-    
+
     // CSS でのサイズも設定
     canvas.style.width = size + 'px';
     canvas.style.height = size + 'px';
@@ -122,14 +122,14 @@ function handleResize() {
     if (drawingEngine) {
         pathHistory = drawingEngine.getPathHistory();
     }
-    
+
     // Canvasサイズを調整
     resizeCanvas();
-    
+
     // DrawingEngineの描画設定を再初期化
     if (drawingEngine) {
         drawingEngine.initializeDrawingSettings();
-        
+
         // 保存したパス履歴を復元
         if (pathHistory && pathHistory.length > 0) {
             drawingEngine.pathHistory = pathHistory;
@@ -143,9 +143,9 @@ function handleResize() {
  */
 function setupGameEventListeners() {
     if (!gameController) return;
-    
+
     // スコア更新時のイベント
-    gameController.addEventListener('scoreUpdated', function(data) {
+    gameController.addEventListener('scoreUpdated', function (data) {
         // スコア表示にパルスエフェクトを追加
         const totalScoreElement = document.getElementById('totalScore');
         if (totalScoreElement) {
@@ -192,6 +192,6 @@ function showError(message) {
 }
 
 // タッチイベントのパッシブリスナー設定（パフォーマンス最適化）
-document.addEventListener('touchstart', function() {}, { passive: false });
-document.addEventListener('touchmove', function() {}, { passive: false });
-document.addEventListener('touchend', function() {}, { passive: false });
+document.addEventListener('touchstart', function () { }, { passive: false });
+document.addEventListener('touchmove', function () { }, { passive: false });
+document.addEventListener('touchend', function () { }, { passive: false });

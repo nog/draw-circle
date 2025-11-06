@@ -121,12 +121,27 @@
         </main>
     </div>
 
-    <!-- JavaScript ファイル（キャッシュバスティング用バージョンパラメータ付き） -->
-    <script src="js/DrawingEngine.js?v=1.1.0" onerror="console.error('DrawingEngine.js の読み込みに失敗しました')"></script>
-    <script src="js/ScoreCalculator.js?v=1.1.0" onerror="console.error('ScoreCalculator.js の読み込みに失敗しました')"></script>
-    <script src="js/UIManager.js?v=1.1.0" onerror="console.error('UIManager.js の読み込みに失敗しました')"></script>
-    <script src="js/GameController.js?v=1.1.0" onerror="console.error('GameController.js の読み込みに失敗しました')"></script>
-    <script src="js/main.js?v=1.1.0" onerror="console.error('main.js の読み込みに失敗しました')"></script>
+    <!-- キャッシュバスティング用タイムスタンプ（Kiro Hookで自動更新） -->
+    <script>
+        // このタイムスタンプはJSファイル保存時にKiro Hookで自動更新されます
+        window.CACHE_BUSTER = 1762442213825;
+    </script>
+
+    <!-- JavaScript ファイル -->
+    <script>
+        // スクリプトを動的に読み込み
+        const scripts = [
+            'js/DrawingEngine.js',
+            'js/ScoreCalculator.js',
+            'js/UIManager.js',
+            'js/GameController.js',
+            'js/main.js'
+        ];
+        
+        scripts.forEach(src => {
+            document.write(`<script src="${src}?v=${window.CACHE_BUSTER}" onerror="console.error('${src} の読み込みに失敗しました')"><\/script>`);
+        });
+    </script>
 
     <!-- エラーハンドリング -->
     <script>

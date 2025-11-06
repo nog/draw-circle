@@ -79,10 +79,13 @@ class DrawingEngine {
 
 ```javascript
 class ScoreCalculator {
-  calculateCircleQuality(path) // 0-100点、小数点以下3桁まで計算
+  constructor(canvas) // キャンバス参照を保持
+  calculateCircleQuality(path) // 0-100点、小数点以下3桁まで計算（直線検出含む）
   calculateTotalScore(qualityScore) // 品質スコアから最終スコアを計算
   calculateCompleteScore(path) // 包括的なスコアデータを返す
   getQualityLevel(qualityScore) // 品質レベルの判定
+  getCanvasShortEdge() // キャンバスの短辺を取得
+  isLineTooLarge(radius) // 直線検出チェック
 }
 ```
 
@@ -164,11 +167,37 @@ class UIManager {
 - **始点終点距離**: 開始点と終了点の距離（小数点以下4桁で計算）
 - **滑らかさ**: パス上の点の分布の均一性（小数点以下4桁で計算）
 
+### 直線検出ロジック
+
+直線や極端に大きな円が高得点になることを防ぐため、以下のチェックを実装します：
+
+```javascript
+// キャンバスサイズの取得
+function getCanvasShortEdge(canvas) {
+  return Math.min(canvas.width, canvas.height);
+}
+
+// 直線検出チェック
+function isLineTooLarge(radius, canvasShortEdge) {
+  // 計算された理想円の半径がキャンバスの短辺を超える場合は直線と判定
+  return radius > canvasShortEdge;
+}
+```
+
+### スコア計算の実装
+
 ```javascript
 // 円形度の計算（小数点以下4桁）
-function calculateCircularity(points) {
+function calculateCircularity(points, canvas) {
   const center = calculateCenter(points);
   const avgRadius = calculateAverageRadius(points, center);
+  
+  // 直線検出チェック
+  const canvasShortEdge = getCanvasShortEdge(canvas);
+  if (isLineTooLarge(avgRadius, canvasShortEdge)) {
+    return 0; // 円形度スコアを0に設定
+  }
+  
   const radiusVariance = calculateRadiusVariance(points, center, avgRadius);
   const circularity = Math.max(0, 100 - (radiusVariance / avgRadius) * 100);
   return Math.round(circularity * 10000) / 10000; // 小数点以下4桁
@@ -189,10 +218,10 @@ function calculateSmoothness(points) {
 }
 
 // 最終品質スコアの計算（小数点以下3桁）
-function calculateCircleQuality(path) {
-  const circularity = calculateCircularity(points); // 4桁精度
-  const closure = calculateClosure(points);         // 4桁精度
-  const smoothness = calculateSmoothness(points);   // 4桁精度
+function calculateCircleQuality(path, canvas) {
+  const circularity = calculateCircularity(points, canvas); // 4桁精度、直線検出含む
+  const closure = calculateClosure(points);                 // 4桁精度
+  const smoothness = calculateSmoothness(points);           // 4桁精度
   
   // 重み付き合計
   const qualityScore = 

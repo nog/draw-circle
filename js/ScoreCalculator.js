@@ -3,7 +3,10 @@
  * 円の品質、スピード、サイズを評価してスコアを計算します
  */
 class ScoreCalculator {
-    constructor() {
+    constructor(canvas) {
+        // キャンバス参照を保持
+        this.canvas = canvas;
+        
         // スコア計算の設定値
         this.config = {
             // 品質スコア設定
@@ -186,6 +189,12 @@ class ScoreCalculator {
      */
     calculateCircularity(points, center, avgRadius) {
         if (avgRadius === 0) return 0;
+
+        // 直線検出チェック
+        if (this.isLineTooLarge(avgRadius)) {
+            // 半径がキャンバスの短辺を超える場合、円形度スコアを0に設定
+            return 0;
+        }
 
         let sumSquaredDeviation = 0;
 
@@ -402,6 +411,35 @@ class ScoreCalculator {
         };
 
         return scoreData;
+    }
+
+    /**
+     * キャンバスの短辺を取得
+     * @returns {number} キャンバスの短辺の長さ
+     */
+    getCanvasShortEdge() {
+        if (!this.canvas) {
+            console.warn('キャンバス参照が設定されていません');
+            return 0;
+        }
+        return Math.min(this.canvas.width, this.canvas.height);
+    }
+
+    /**
+     * 直線検出チェック
+     * 計算された半径がキャンバス短辺の50%を超える場合、直線と判定
+     * （直径がキャンバスと同じサイズ以上になる円を直線として扱う）
+     * @param {number} radius - 計算された理想円の半径
+     * @returns {boolean} 直線と判定される場合はtrue
+     */
+    isLineTooLarge(radius) {
+        const canvasShortEdge = this.getCanvasShortEdge();
+        if (canvasShortEdge === 0) {
+            return false;
+        }
+        // キャンバス短辺の50%を閾値とする（直径 = キャンバスサイズ）
+        const maxAllowedRadius = canvasShortEdge * 0.5;
+        return radius > maxAllowedRadius;
     }
 
     /**

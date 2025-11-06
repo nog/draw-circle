@@ -214,6 +214,30 @@
     - デバッグ用のログのみ残す（エラーログは保持）
     - _要件: 4.4_
 
+- [x] 13. 直線検出ロジックの実装
+  - [x] 13.1 ScoreCalculatorへのキャンバス参照の追加
+    - ScoreCalculatorのコンストラクタにcanvasパラメータを追加
+    - キャンバス参照をインスタンス変数として保持
+    - GameControllerでScoreCalculatorを初期化する際にcanvasを渡す
+    - _要件: 2.6_
+  
+  - [x] 13.2 キャンバス短辺取得メソッドの実装
+    - getCanvasShortEdgeメソッドを実装
+    - canvas.widthとcanvas.heightの小さい方を返す
+    - _要件: 2.6_
+  
+  - [x] 13.3 直線検出チェックメソッドの実装
+    - isLineTooLargeメソッドを実装
+    - 計算された半径とキャンバス短辺を比較
+    - 半径がキャンバス短辺を超える場合にtrueを返す
+    - _要件: 2.6_
+  
+  - [x] 13.4 円形度計算への直線検出ロジックの統合
+    - calculateCircularityメソッドに直線検出チェックを追加
+    - isLineTooLargeがtrueの場合、円形度スコアを0に設定
+    - 既存の円形度計算ロジックは維持
+    - _要件: 2.6_
+
 - [ ] 12. シェア画像へのモーダル表示内容の反映
   - [x] 12.1 シェア画像への10段階評価の追加
     - generateScreenshotForShareメソッドにスコア内訳描画処理を追加
