@@ -1,0 +1,16 @@
+{
+  "enabled": true,
+  "name": "JavaScript更新時バージョンバンプ",
+  "description": "JavaScriptファイル（js/ディレクトリ内）が更新されると、自動的にbump-versionスクリプトを実行してバージョンを更新します",
+  "version": "1",
+  "when": {
+    "type": "fileEdited",
+    "patterns": [
+      "js/*.js"
+    ]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "JavaScriptファイルが更新されました。scripts/bump-version.jsを実行してバージョンを自動的にバンプしてください。Output通りにindex.htmlが更新されているか確認して下さい。"
+  }
+}
