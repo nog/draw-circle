@@ -167,6 +167,31 @@ class UIManager {
 - **始点終点距離**: 開始点と終了点の距離（小数点以下4桁で計算）
 - **滑らかさ**: パス上の点の分布の均一性（小数点以下4桁で計算）
 
+#### 円形度の計算方法
+
+円形度は、描画された各点が理想円（平均半径の円）からどれだけ外れているかを評価します。
+
+**重要な設計原則**：
+- **角度ベースの均等サンプリング**を使用して、描画速度に依存しない公平な評価を実現
+- 同一角度区間に複数の点がある場合、**最悪の偏差を持つ点を採用**（厳格な評価）
+- これにより「ミスした部分を素早く通過する」「何度も往復して良い点を混ぜる」などのチート戦略を防止
+
+**サンプリングバイアスの問題と解決**：
+- 従来の点ベース評価では、ゆっくり描いた部分は点が密になり、素早く描いた部分は点が疎になる
+- その結果、ミスした部分を素早く通過すると、その部分の点数が少なくなり評価への影響が小さくなる
+- 角度ベースサンプリングにより、円周全体を360区間に等分割して均等に評価
+
+**計算手順**：
+1. Taubin法による最小二乗円フィッティングで理想円の中心を計算
+2. 全点から中心までの距離の平均を計算（平均半径）
+3. 円周を360区間（1度ごと）に分割
+4. 各点を角度に基づいて対応する区間に振り分け
+5. 各区間で最も偏差が大きい点を採用（複数点がある場合）
+6. 点がない区間は前後の区間から補間
+7. 全360区間の偏差から標準偏差を計算
+8. 平均半径に対する偏差率を計算
+9. 偏差率が小さいほど高スコアになるように変換（0-100点）
+
 ### 直線検出ロジック
 
 直線や極端に大きな円が高得点になることを防ぐため、以下のチェックを実装します：
@@ -187,7 +212,7 @@ function isLineTooLarge(radius, canvasShortEdge) {
 ### スコア計算の実装
 
 ```javascript
-// 円形度の計算（小数点以下4桁）
+// 円形度の計算（小数点以下4桁）- 角度ベース均等サンプリング
 function calculateCircularity(points, canvas) {
   const center = calculateCenter(points);
   const avgRadius = calculateAverageRadius(points, center);
@@ -198,9 +223,111 @@ function calculateCircularity(points, canvas) {
     return 0; // 円形度スコアを0に設定
   }
   
-  const radiusVariance = calculateRadiusVariance(points, center, avgRadius);
-  const circularity = Math.max(0, 100 - (radiusVariance / avgRadius) * 100);
+  // 角度を360区間に分割（1度ごと）
+  const numBins = 360;
+  const angleStep = (2 * Math.PI) / numBins;
+  const bins = Array(numBins).fill(null).map(() => []);
+  
+  // 各点を角度区間に振り分け
+  for (const point of points) {
+    const angle = Math.atan2(point.y - center.y, point.x - center.x);
+    const normalizedAngle = angle < 0 ? angle + 2 * Math.PI : angle;
+    const binIndex = Math.floor(normalizedAngle / angleStep) % numBins;
+    
+    const radius = Math.sqrt(
+      Math.pow(point.x - center.x, 2) +
+      Math.pow(point.y - center.y, 2)
+    );
+    
+    bins[binIndex].push(radius);
+  }
+  
+  // 各区間で最悪の偏差を採用
+  let sumSquaredDeviation = 0;
+  
+  for (let i = 0; i < numBins; i++) {
+    let worstDeviation = 0;
+    
+    if (bins[i].length > 0) {
+      // この角度区間で最も偏差が大きい点を採用
+      for (const radius of bins[i]) {
+        const deviation = Math.abs(radius - avgRadius);
+        worstDeviation = Math.max(worstDeviation, deviation);
+      }
+    } else {
+      // 点がない区間は隣接区間から補間
+      const interpolatedRadius = interpolateFromNeighbors(bins, i, numBins, avgRadius);
+      worstDeviation = Math.abs(interpolatedRadius - avgRadius);
+    }
+    
+    sumSquaredDeviation += worstDeviation * worstDeviation;
+  }
+  
+  // 標準偏差を計算
+  const standardDeviation = Math.sqrt(sumSquaredDeviation / numBins);
+  
+  // 偏差率を計算（半径に対する偏差の割合）
+  const deviationRatio = standardDeviation / avgRadius;
+  
+  // 円形度スコア（偏差が小さいほど高スコア）
+  const circularity = Math.max(0, 100 - (deviationRatio * 200));
   return Math.round(circularity * 10000) / 10000; // 小数点以下4桁
+}
+
+// 隣接区間から半径を補間（最悪値採用版）
+function interpolateFromNeighbors(bins, index, numBins, avgRadius) {
+  // 前後の有効な区間から最悪の偏差を持つ半径を取得
+  let beforeWorstRadius = null;
+  let afterWorstRadius = null;
+  
+  // 前方を探索
+  for (let offset = 1; offset < numBins / 2; offset++) {
+    const beforeIndex = (index - offset + numBins) % numBins;
+    if (bins[beforeIndex].length > 0) {
+      let worstRadius = bins[beforeIndex][0];
+      let worstDeviation = Math.abs(worstRadius - avgRadius);
+      
+      for (const radius of bins[beforeIndex]) {
+        const deviation = Math.abs(radius - avgRadius);
+        if (deviation > worstDeviation) {
+          worstDeviation = deviation;
+          worstRadius = radius;
+        }
+      }
+      beforeWorstRadius = worstRadius;
+      break;
+    }
+  }
+  
+  // 後方を探索
+  for (let offset = 1; offset < numBins / 2; offset++) {
+    const afterIndex = (index + offset) % numBins;
+    if (bins[afterIndex].length > 0) {
+      let worstRadius = bins[afterIndex][0];
+      let worstDeviation = Math.abs(worstRadius - avgRadius);
+      
+      for (const radius of bins[afterIndex]) {
+        const deviation = Math.abs(radius - avgRadius);
+        if (deviation > worstDeviation) {
+          worstDeviation = deviation;
+          worstRadius = radius;
+        }
+      }
+      afterWorstRadius = worstRadius;
+      break;
+    }
+  }
+  
+  // 補間（前後の最悪値の平均）
+  if (beforeWorstRadius !== null && afterWorstRadius !== null) {
+    return (beforeWorstRadius + afterWorstRadius) / 2;
+  } else if (beforeWorstRadius !== null) {
+    return beforeWorstRadius;
+  } else if (afterWorstRadius !== null) {
+    return afterWorstRadius;
+  } else {
+    return avgRadius; // フォールバック
+  }
 }
 
 // 始点終点距離の計算（小数点以下4桁）

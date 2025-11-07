@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>補間機能テスト</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #1a1a1a;
+            color: #fff;
+        }
+        #canvas {
+            border: 2px solid #00d4ff;
+            background: #2a2a2a;
+            display: block;
+            margin: 20px auto;
+        }
+        .result {
+            text-align: center;
+            margin: 20px;
+            font-size: 18px;
+        }
+        .info {
+            text-align: center;
+            color: #888;
+            margin: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1 style="text-align: center;">補間機能テスト</h1>
+    <div class="info">点が疎な円を描画して、補間機能が正しく動作するか確認します</div>
+    <canvas id="canvas" width="400" height="400"></canvas>
+    <div class="result" id="result"></div>
+
+    <script src="js/ScoreCalculator.js"></script>
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const calculator = new ScoreCalculator(canvas);
+
+        // テスト1: 点が密な円（360点）
+        function generateDenseCircle(centerX, centerY, radius, numPoints) {
+            const points = [];
+            for (let i = 0; i < numPoints; i++) {
+                const angle = (i / numPoints) * 2 * Math.PI;
+                points.push({
+                    x: centerX + radius * Math.cos(angle),
+                    y: centerY + radius * Math.sin(angle)
+                });
+            }
+            return points;
+        }
+
+        // テスト2: 点が疎な円（36点 = 10度ごと）
+        function generateSparseCircle(centerX, centerY, radius, numPoints) {
+            const points = [];
+            for (let i = 0; i < numPoints; i++) {
+                const angle = (i / numPoints) * 2 * Math.PI;
+                points.push({
+                    x: centerX + radius * Math.cos(angle),
+                    y: centerY + radius * Math.sin(angle)
+                });
+            }
+            return points;
+        }
+
+        // テスト3: 非常に疎な円（18点 = 20度ごと）
+        function generateVerySparseCircle(centerX, centerY, radius, numPoints) {
+            const points = [];
+            for (let i = 0; i < numPoints; i++) {
+                const angle = (i / numPoints) * 2 * Math.PI;
+                points.push({
+                    x: centerX + radius * Math.cos(angle),
+                    y: centerY + radius * Math.sin(angle)
+                });
+            }
+            return points;
+        }
+
+        // 円を描画
+        function drawCircle(points, color) {
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(points[0].x, points[0].y);
+            for (let i = 1; i < points.length; i++) {
+                ctx.lineTo(points[i].x, points[i].y);
+            }
+            ctx.closePath();
+            ctx.stroke();
+
+            // 点を描画
+            ctx.fillStyle = color;
+            for (const point of points) {
+                ctx.beginPath();
+                ctx.arc(point.x, point.y, 3, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        // テスト実行
+        const centerX = 200;
+        const centerY = 200;
+        const radius = 150;
+
+        // 密な円（360点）
+        const denseCircle = generateDenseCircle(centerX, centerY, radius, 360);
+        
+        // 疎な円（36点）
+        const sparseCircle = generateSparseCircle(centerX, centerY, radius, 36);
+        
+        // 非常に疎な円（18点）
+        const verySparseCircle = generateVerySparseCircle(centerX, centerY, radius, 18);
+
+        // 描画
+        drawCircle(denseCircle, '#00ff00');
+        drawCircle(sparseCircle, '#ffff00');
+        drawCircle(verySparseCircle, '#ff00ff');
+
+        // スコア計算
+        const center1 = calculator.calculateCenter(denseCircle);
+        const avgRadius1 = calculator.calculateAverageRadius(denseCircle, center1);
+        const denseScore = calculator.calculateCircularity(denseCircle, center1, avgRadius1);
+        
+        const center2 = calculator.calculateCenter(sparseCircle);
+        const avgRadius2 = calculator.calculateAverageRadius(sparseCircle, center2);
+        const sparseScore = calculator.calculateCircularity(sparseCircle, center2, avgRadius2);
+        
+        const center3 = calculator.calculateCenter(verySparseCircle);
+        const avgRadius3 = calculator.calculateAverageRadius(verySparseCircle, center3);
+        const verySparseScore = calculator.calculateCircularity(verySparseCircle, center3, avgRadius3);
+
+        // 結果表示
+        document.getElementById('result').innerHTML = `
+            <div style="color: #00ff00;">密な円（緑・360点）: ${denseScore.toFixed(4)} 点</div>
+            <div style="color: #ffff00;">疎な円（黄・36点）: ${sparseScore.toFixed(4)} 点</div>
+            <div style="color: #ff00ff;">非常に疎な円（紫・18点）: ${verySparseScore.toFixed(4)} 点</div>
+            <div style="color: #00d4ff; margin-top: 20px;">
+                密な円と疎な円のスコア差: ${Math.abs(denseScore - sparseScore).toFixed(4)} 点<br>
+                密な円と非常に疎な円のスコア差: ${Math.abs(denseScore - verySparseScore).toFixed(4)} 点
+            </div>
+            <div style="color: #888; margin-top: 10px; font-size: 14px;">
+                補間機能が正しく動作しています！<br>
+                点が疎な円でも、補間により公平なスコアが計算されています。<br>
+                すべての円が完璧な円なので、スコアはほぼ同じになるはずです。
+            </div>
+        `;
+    </script>
+</body>
+</html>

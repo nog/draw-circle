@@ -182,6 +182,7 @@ class ScoreCalculator {
 
     /**
      * 円形度を計算（理想的な円からの偏差）
+     * 角度ベース均等サンプリングを使用して、描画速度に依存しない公平な評価を実現
      * @param {Array} points - 描画点の配列
      * @param {Object} center - 中心座標
      * @param {number} avgRadius - 平均半径
@@ -196,19 +197,57 @@ class ScoreCalculator {
             return 0;
         }
 
-        let sumSquaredDeviation = 0;
+        // 角度を360区間に分割（1度ごと）
+        const numBins = 360;
+        const angleStep = (2 * Math.PI) / numBins;
+        
+        // 各区間に対応する配列を初期化
+        const bins = Array(numBins).fill(null).map(() => []);
 
+        // 各点を角度区間に振り分け
         for (const point of points) {
+            // 中心からの角度を計算
+            const angle = Math.atan2(point.y - center.y, point.x - center.x);
+            
+            // 角度を0から2πの範囲に正規化
+            const normalizedAngle = angle < 0 ? angle + 2 * Math.PI : angle;
+            
+            // 対応する区間のインデックスを計算
+            const binIndex = Math.floor(normalizedAngle / angleStep) % numBins;
+            
+            // 中心からの距離（半径）を計算
             const radius = Math.sqrt(
                 Math.pow(point.x - center.x, 2) +
                 Math.pow(point.y - center.y, 2)
             );
-            const deviation = Math.abs(radius - avgRadius);
-            sumSquaredDeviation += deviation * deviation;
+            
+            // 区間に半径を追加
+            bins[binIndex].push(radius);
+        }
+
+        // 各区間で最悪の偏差を採用（厳格な評価）
+        let sumSquaredDeviation = 0;
+        
+        for (let i = 0; i < numBins; i++) {
+            let worstDeviation = 0;
+            
+            if (bins[i].length > 0) {
+                // この角度区間に複数の点がある場合、最も偏差が大きい点を採用
+                for (const radius of bins[i]) {
+                    const deviation = Math.abs(radius - avgRadius);
+                    worstDeviation = Math.max(worstDeviation, deviation);
+                }
+            } else {
+                // 点がない区間は隣接区間から補間
+                const interpolatedRadius = this.interpolateFromNeighbors(bins, i, numBins, avgRadius);
+                worstDeviation = Math.abs(interpolatedRadius - avgRadius);
+            }
+            
+            sumSquaredDeviation += worstDeviation * worstDeviation;
         }
 
         // 標準偏差を計算
-        const standardDeviation = Math.sqrt(sumSquaredDeviation / points.length);
+        const standardDeviation = Math.sqrt(sumSquaredDeviation / numBins);
 
         // 偏差率を計算（半径に対する偏差の割合）
         const deviationRatio = standardDeviation / avgRadius;
@@ -218,6 +257,73 @@ class ScoreCalculator {
 
         // 小数点以下4桁で丸める
         return Math.round(circularityScore * 10000) / 10000;
+    }
+
+    /**
+     * 隣接区間から半径を補間（最悪値採用版）
+     * 点がない区間の前後から最悪の偏差を持つ半径を取得して補間
+     * 円周をまたぐ場合も正しく処理
+     * @param {Array} bins - 各角度区間の半径配列
+     * @param {number} index - 補間対象の区間インデックス
+     * @param {number} numBins - 総区間数
+     * @param {number} avgRadius - 平均半径
+     * @returns {number} 補間された半径
+     */
+    interpolateFromNeighbors(bins, index, numBins, avgRadius) {
+        let beforeWorstRadius = null;
+        let afterWorstRadius = null;
+        
+        // 前方を探索（円周をまたぐ場合も対応）
+        for (let offset = 1; offset < numBins / 2; offset++) {
+            const beforeIndex = (index - offset + numBins) % numBins;
+            if (bins[beforeIndex].length > 0) {
+                // この区間で最も偏差が大きい半径を取得
+                let worstRadius = bins[beforeIndex][0];
+                let worstDeviation = Math.abs(worstRadius - avgRadius);
+                
+                for (const radius of bins[beforeIndex]) {
+                    const deviation = Math.abs(radius - avgRadius);
+                    if (deviation > worstDeviation) {
+                        worstDeviation = deviation;
+                        worstRadius = radius;
+                    }
+                }
+                beforeWorstRadius = worstRadius;
+                break;
+            }
+        }
+        
+        // 後方を探索（円周をまたぐ場合も対応）
+        for (let offset = 1; offset < numBins / 2; offset++) {
+            const afterIndex = (index + offset) % numBins;
+            if (bins[afterIndex].length > 0) {
+                // この区間で最も偏差が大きい半径を取得
+                let worstRadius = bins[afterIndex][0];
+                let worstDeviation = Math.abs(worstRadius - avgRadius);
+                
+                for (const radius of bins[afterIndex]) {
+                    const deviation = Math.abs(radius - avgRadius);
+                    if (deviation > worstDeviation) {
+                        worstDeviation = deviation;
+                        worstRadius = radius;
+                    }
+                }
+                afterWorstRadius = worstRadius;
+                break;
+            }
+        }
+        
+        // 補間（前後の最悪値の平均）
+        if (beforeWorstRadius !== null && afterWorstRadius !== null) {
+            return (beforeWorstRadius + afterWorstRadius) / 2;
+        } else if (beforeWorstRadius !== null) {
+            return beforeWorstRadius;
+        } else if (afterWorstRadius !== null) {
+            return afterWorstRadius;
+        } else {
+            // すべての区間が空の場合（通常は発生しない）
+            return avgRadius;
+        }
     }
 
     /**
