@@ -135,6 +135,9 @@ class GameController {
             // スコア履歴に追加
             this.addToScoreHistory(scoreData, path);
             
+            // Google Analyticsイベント送信
+            this.sendAnalyticsEvent(scoreData, path);
+            
             // 結果モーダルを表示
             if (this.uiManager) {
                 this.uiManager.showResultModal(scoreData, path);
@@ -302,6 +305,54 @@ class GameController {
         }
     }
     
+    /**
+     * Google Analyticsイベントを送信
+     */
+    sendAnalyticsEvent(scoreData, path) {
+        // gtagが利用可能かチェック
+        if (typeof gtag !== 'function') {
+            console.warn('Google Analytics (gtag) が利用できません');
+            return;
+        }
+
+        try {
+            // 描画時間を計算（ミリ秒）
+            const drawingTime = path.endTime - path.startTime;
+            
+            // 評価レベルを判定
+            const quality = scoreData.qualityScore;
+            let level = '';
+            if (quality >= 95) level = 'master';
+            else if (quality >= 90) level = 'expert';
+            else if (quality >= 80) level = 'advanced';
+            else if (quality >= 70) level = 'intermediate';
+            else if (quality >= 60) level = 'beginner';
+            else level = 'practice';
+
+            // ゲーム完了イベントを送信
+            gtag('event', 'game_complete', {
+                event_category: 'game',
+                event_label: level,
+                value: Math.round(scoreData.qualityScore * 1000), // 整数値に変換（小数点以下3桁を保持）
+                quality_score: scoreData.qualityScore,
+                circularity: scoreData.breakdown.circularity,
+                closure: scoreData.breakdown.closure,
+                smoothness: scoreData.breakdown.smoothness,
+                drawing_time_ms: drawingTime,
+                point_count: path.points.length,
+                circles_drawn: this.gameState.circlesDrawn
+            });
+
+            console.log('Google Analyticsイベント送信完了:', {
+                quality: scoreData.qualityScore,
+                level: level
+            });
+
+        } catch (error) {
+            console.error('Google Analyticsイベント送信エラー:', error);
+        }
+    }
+
     /**
      * リソースのクリーンアップ
      */
