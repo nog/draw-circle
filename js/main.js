@@ -90,19 +90,26 @@ document.addEventListener('DOMContentLoaded', function () {
 function resizeCanvas() {
     const canvas = document.getElementById('gameCanvas');
     const gameArea = document.querySelector('.game-area');
+    const gameTitle = document.querySelector('.game-title');
 
     if (!canvas || !gameArea) return;
 
     // コンテナのサイズを取得
     const containerRect = gameArea.getBoundingClientRect();
-    const padding = 20; // パディングを考慮
+    const areaStyles = window.getComputedStyle(gameArea);
+    const titleStyles = gameTitle ? window.getComputedStyle(gameTitle) : null;
+    const horizontalPadding = parseFloat(areaStyles.paddingLeft) + parseFloat(areaStyles.paddingRight);
+    const verticalPadding = parseFloat(areaStyles.paddingTop) + parseFloat(areaStyles.paddingBottom);
+    const titleHeight = gameTitle ? gameTitle.getBoundingClientRect().height : 0;
+    const titleMarginBottom = titleStyles ? parseFloat(titleStyles.marginBottom) : 0;
+    const extraGap = 12;
 
     // アスペクト比を維持しながらサイズを調整
-    const maxWidth = containerRect.width - padding;
-    const maxHeight = containerRect.height - padding;
+    const maxWidth = containerRect.width - horizontalPadding;
+    const maxHeight = containerRect.height - verticalPadding - titleHeight - titleMarginBottom - extraGap;
 
     // 正方形に近い形で最適なサイズを計算
-    const size = Math.min(maxWidth, maxHeight);
+    const size = Math.max(0, Math.min(maxWidth, maxHeight));
 
     // Canvas の実際のサイズを設定
     canvas.width = size;
